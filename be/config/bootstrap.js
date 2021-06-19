@@ -23,34 +23,34 @@ module.exports.bootstrap = async function() {
     ]);
   }
   
-  if (await Orders.count() == 0) {
-    const order = await Orders.create(
-      {
-        customer_fullname: "Huynh Tuan Huy",
-        customer_phone: "0372075655",
-        customer_email: "huyht.work@gmail.com",
-        customer_address: "Ha Noi, Viet Nam",
-        status: 'pending',
-        total: 20000
-      },
-    ).fetch();
-    await OrderProductDetails.createEach([
-      {
-        order_id: order.id,
-        product_detail_id: 1,
-        quantity: 10,
-        price: 100000,
-        sale_price: 10000,
-      },
-      {
-        order_id: order.id,
-        product_detail_id: 2,
-        quantity: 20,
-        price: 150000,
-        sale_price: 15000,
-      },
-    ]);
-  }
+  // if (await Orders.count() == 0) {
+  //   const order = await Orders.create(
+  //     {
+  //       customer_fullname: "Huynh Tuan Huy",
+  //       customer_phone: "0372075655",
+  //       customer_email: "huyht.work@gmail.com",
+  //       customer_address: "Ha Noi, Viet Nam",
+  //       status: 'pending',
+  //       total: 20000
+  //     },
+  //   ).fetch();
+  //   await OrderProductDetails.createEach([
+  //     {
+  //       order_id: order.id,
+  //       product_detail_id: 1,
+  //       quantity: 10,
+  //       price: 100000,
+  //       sale_price: 10000,
+  //     },
+  //     {
+  //       order_id: order.id,
+  //       product_detail_id: 2,
+  //       quantity: 20,
+  //       price: 150000,
+  //       sale_price: 15000,
+  //     },
+  //   ]);
+  // }
   // ```
 
 };
