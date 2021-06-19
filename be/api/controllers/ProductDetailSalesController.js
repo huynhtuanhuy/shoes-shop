@@ -1,30 +1,13 @@
 /**
- * CategoriesController.js
+ * ProductsController.js
  *
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-const slug = require("slug");
+
+const slug = require('slug');
 
  module.exports = {
-    options: async (req, res) => {
-        try {
-            const categoryData = await Categories.find({});
-
-            res.json({
-                success: 1,
-                data: categoryData,
-                message: '',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({
-                success: 0,
-                data: null,
-                message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
-            });
-        }
-    },
     find: async (req, res) => {
         const { page = 1, perPage = 10, sorted = [], filtered = [] } = req.query;
         try {
@@ -34,22 +17,33 @@ const slug = require("slug");
                 for (let i = 0; i < filtered.length; i++) {
                     const filterItem = JSON.parse(filtered[i]);
                     if (filterItem.id && filterItem.value) {
-                        filter[filterItem.id] = filterItem.id == "parent_id" ? filterItem.value : { contains: filterItem.value };
+                        filter[filterItem.id] = filterItem.id == "product_id" ? filterItem.value : { contains: filterItem.value };
                     }
                 }
             }
 
-            const total = await Categories.count(filter);
-            const categoryData = await Categories.find(filter)
+            const total = await ProductDetailSales.count(filter);
+            const productDetailSaleData = await ProductDetailSales.find(filter)
                 .limit(Number(perPage))
-                .skip((Number(page)-1)*Number(perPage))
+                .skip((Number(page) - 1) * Number(perPage))
                 .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : [])
-                .populate('parent_id');
+                .populate('product_id');
+
+            const product_details = await ProductDetails.find({
+                id: {
+                    in: productDetailSaleData.map(item => item.product_detail_id)
+                }
+            }).populate('color_id').populate('size_id');
 
             res.json({
                 success: 1,
                 data: {
-                    data: categoryData,
+                    data: productDetailSaleData.map(productDetailSale => {
+                        return {
+                            ...productDetailSale,
+                            product_detail_id: product_details.filter(item => item.id == productDetailSale.product_detail_id)[0],
+                        }
+                    }),
                     page: Number(page),
                     total: total,
                     perPage: Number(perPage),
@@ -73,19 +67,19 @@ const slug = require("slug");
                 id,
             };
 
-            const categoryFound = await Categories.findOne(query);
+            const productDetailSaleFound = await ProductDetailSales.findOne(query).populate('product_detail_id').populate('product_id');
 
-            if (!categoryFound || !categoryFound.id) {
+            if (!productDetailSaleFound || !productDetailSaleFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Danh mục sản phẩm không tồn tại!'
+                    message: 'Chương trình khuyến mãi không tồn tại!'
                 });
             }
 
             return res.json({
                 success: 1,
-                data: categoryFound,
+                data: productDetailSaleFound,
                 message: '',
             });
         } catch (error) {
@@ -105,27 +99,17 @@ const slug = require("slug");
                 id,
             };
 
-            const categoryFound = await Categories.findOne(query);
+            const productDetailSaleFound = await ProductDetailSales.findOne(query);
 
-            if (!categoryFound || !categoryFound.id) {
+            if (!productDetailSaleFound || !productDetailSaleFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Danh mục sản phẩm không tồn tại!'
+                    message: 'Chương trình khuyến mãi không tồn tại!'
                 });
             }
 
-            const productCategories = await ProductCategories.find({ category_id: categoryFound.id });
-            console.log(productCategories);
-            if (productCategories.length > 0) {
-                return res.status(400).json({
-                    success: 0,
-                    data: null,
-                    message: 'Không xóa được danh mục vì đã có sản phẩm!'
-                });
-            }
-
-            // await Categories.destroyOne({ id });
+            await ProductDetailSales.destroyOne({ id });
 
             return res.json({
                 success: 1,
@@ -143,35 +127,37 @@ const slug = require("slug");
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { name, parent_id } = req.body;
+        const { product_id, product_detail_id, sale_price, start_date, end_date } = req.body;
 
         try {
             const query = {
                 id,
             };
 
-            const categoryFound = await Categories.findOne(query);
+            const productDetailSaleFound = await ProductDetailSales.findOne(query);
 
-            if (!categoryFound || !categoryFound.id) {
+            if (!productDetailSaleFound || !productDetailSaleFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Danh mục sản phẩm không tồn tại!'
+                    message: 'Chương trình khuyến mãi không tồn tại!'
                 });
             }
 
-            await Categories.updateOne({ id })
+            await ProductDetailSales.updateOne({ id })
                 .set({
-                    name: name || categoryFound.name,
-                    slug: slug(name || categoryFound.name),
-                    parent_id: parent_id || categoryFound.parent_id,
+                    product_id: product_id || productDetailSaleFound.product_id,
+                    product_detail_id: product_detail_id || productDetailSaleFound.product_detail_id,
+                    sale_price: sale_price || productDetailSaleFound.sale_price,
+                    start_date: start_date || productDetailSaleFound.start_date,
+                    end_date: end_date || productDetailSaleFound.end_date,
                 });
 
-            const categoryUpdated = await Categories.findOne(query);
+            const productDetailSaleUpdated = await ProductDetailSales.findOne(query);
 
             return res.json({
                 success: 1,
-                data: categoryUpdated,
+                data: productDetailSaleUpdated,
                 message: '',
             });
         } catch (error) {
@@ -184,18 +170,19 @@ const slug = require("slug");
         }
     },
     create: async (req, res) => {
-        const { name, parent_id } = req.body;
-
+        const { product_id, product_detail_id, sale_price, start_date, end_date } = req.body;
         try {
-            const categoryCreated = await Categories.create({
-                name,
-                slug: slug(name),
-                parent_id,
+            const productDetailSaleCreated = await ProductDetailSales.create({
+                product_id,
+                product_detail_id,
+                sale_price,
+                start_date,
+                end_date,
             }).fetch();
 
             return res.json({
                 success: 1,
-                data: categoryCreated,
+                data: productDetailSaleCreated,
                 message: '',
             });
         } catch (error) {

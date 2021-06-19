@@ -34,8 +34,8 @@ module.exports.session = {
   // isSessionDisabled: function (req){
   //   return !!req.path.match(req._sails.LOOKS_LIKE_ASSET_RX);
   // },
-  adapter: 'express-mysql-session',
-  url: 'mysql://root:@localhost:3306/shoes',
+  // adapter: 'express-mysql-session',
+  // url: 'mysql://root:@localhost:3306/shoes',
   secret: 'c0nm3oM4tr30cAyC4u',
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000,

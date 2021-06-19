@@ -76,7 +76,7 @@
             });
         }
     },
-    delete: async (req, res) => {
+    destroy: async (req, res) => {
         const { id } = req.params;
 
         try {

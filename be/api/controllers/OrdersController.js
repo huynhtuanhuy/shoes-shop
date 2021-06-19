@@ -6,26 +6,36 @@
  */
 
  module.exports = {
-    all: async (req, res) => {
-        const { page = 1, perPage = 10 } = req.query;
+    find: async (req, res) => {
+        const { page = 1, perPage = 10, sorted = [], filtered = [] } = req.query;
         try {
-            if (req.session.userInfo && req.session.userInfo.id) {
-                const orderData = await Orders.find({
-                    user_id: req.session.userInfo.id
-                });
+            const filter = {};
 
-                res.json({
-                    success: 1,
-                    data: orderData,
-                    message: '',
-                });
-            } else {
-                res.status(401).json({
-                    success: 0,
-                    data: null,
-                    message: 'Bạn cần đăng nhập để truy cập hệ thống'
-                });
+            if (filtered && filtered.length > 0) {
+                for (let i = 0; i < filtered.length; i++) {
+                    const filterItem = JSON.parse(filtered[i]);
+                    if (filterItem.id && filterItem.value) {
+                        filter[filterItem.id] = { contains: filterItem.value };
+                    }
+                }
             }
+
+            const total = await Orders.count(filter);
+            const orderData = await Orders.find(filter)
+                .limit(Number(perPage))
+                .skip((Number(page) - 1) * Number(perPage))
+                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : []);
+
+            res.json({
+                success: 1,
+                data: {
+                    data: orderData,
+                    page: Number(page),
+                    total: total,
+                    perPage: Number(perPage),
+                },
+                message: '',
+            });
         } catch (error) {
             console.log(error);
             res.status(500).json({
@@ -39,77 +49,40 @@
         const { id } = req.params;
 
         try {
-            if (req.session.userInfo && req.session.userInfo.id) {
-                const query = {
-                    id,
-                    user_id: req.session.userInfo.id
-                };
+            const query = {
+                id,
+            };
 
-                const orderFound = await Orders.findOne(query);
+            const orderFound = await Orders.findOne(query);
 
-                if (!orderFound || !orderFound.id) {
-                    return res.status(404).json({
-                        success: 0,
-                        data: null,
-                        message: 'Đơn hàng không tồn tại!'
-                    });
-                }
-
-                return res.json({
-                    success: 1,
-                    data: orderFound,
-                    message: '',
-                });
-            } else {
-                return res.status(401).json({
+            if (!orderFound || !orderFound.id) {
+                return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Bạn cần đăng nhập để truy cập hệ thống'
+                    message: 'Đơn hàng không tồn tại!'
                 });
             }
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({
-                success: 0,
-                data: null,
-                message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
+
+            const order_product_details = await OrderProductDetails.find({ order_id: orderFound.id });
+            const product_details = await ProductDetails.find({
+                id: {
+                    in: order_product_details.map(item => item.product_detail_id),
+                }
+            }).populate('product_id').populate('color_id').populate('size_id');
+
+            return res.json({
+                success: 1,
+                data: {
+                    ...orderFound,
+                    order_product_details: order_product_details.map(item => {
+                        return {
+                            ...item,
+                            product_detail: product_details.filter(_item => _item.id == item.product_detail_id)[0]
+                        }
+                    }),
+                },
+                message: '',
             });
-        }
-    },
-    delete: async (req, res) => {
-        const { id } = req.params;
-
-        try {
-            if (req.session.userInfo && req.session.userInfo.id) {
-                const query = {
-                    id,
-                    user_id: req.session.userInfo.id
-                };
-
-                const orderFound = await Orders.findOne(query);
-
-                if (!orderFound || !orderFound.id) {
-                    return res.status(404).json({
-                        success: 0,
-                        data: null,
-                        message: 'Đơn hàng không tồn tại!'
-                    });
-                }
-
-                await Orders.destroyOne({ id });
-
-                return res.json({
-                    success: 1,
-                    data: null,
-                    message: '',
-                });
-            } else {
-                return res.status(401).json({
-                    success: 0,
-                    data: null,
-                    message: 'Bạn cần đăng nhập để truy cập hệ thống'
-                });
-            }
         } catch (error) {
             console.log(error);
             res.status(500).json({
@@ -121,82 +94,41 @@
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { customer_fullname, customer_phone, customer_email, customer_address, total } = req.body;
+        const { user_id, customer_fullname, customer_phone, customer_email, customer_address, status, total } = req.body;
 
         try {
-            if (req.session.userInfo && req.session.userInfo.id) {
-                const query = {
-                    id,
-                    user_id: req.session.userInfo.id
-                };
+            const query = {
+                id,
+            };
 
-                const orderFound = await Orders.findOne(query);
+            const orderFound = await Orders.findOne(query);
 
-                if (!orderFound || !orderFound.id) {
-                    return res.status(404).json({
-                        success: 0,
-                        data: null,
-                        message: 'Đơn hàng không tồn tại!'
-                    });
-                }
-
-                await Orders.updateOne({ id })
-                    .set({
-                        customer_fullname: customer_fullname || orderFound.customer_fullname,
-                        customer_phone: customer_phone || orderFound.customer_phone,
-                        customer_email: customer_email || orderFound.customer_email,
-                        customer_address: customer_address || orderFound.customer_address,
-                        total: total || orderFound.total,
-                    });
-
-                const orderUpdated = await Orders.findOne(query);
-
-                return res.json({
-                    success: 1,
-                    data: orderUpdated,
-                    message: '',
-                });
-            } else {
-                return res.status(401).json({
+            if (!orderFound || !orderFound.id) {
+                return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Bạn cần đăng nhập để truy cập hệ thống'
+                    message: 'Đơn hàng không tồn tại!'
                 });
             }
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({
-                success: 0,
-                data: null,
-                message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
-            });
-        }
-    },
-    create: async (req, res) => {
-        const { customer_fullname, customer_phone, customer_email, customer_address, total } = req.body;
 
-        try {
-            if (req.session.userInfo && req.session.userInfo.id) {
-                const orderCreated = await Orders.create({
+            await Orders.updateOne({ id })
+                .set({
+                    user_id,
                     customer_fullname,
                     customer_phone,
                     customer_email,
                     customer_address,
-                    total,
-                }).fetch();
+                    status,
+                    total
+                });
 
-                return res.json({
-                    success: 1,
-                    data: orderCreated,
-                    message: '',
-                });
-            } else {
-                return res.status(401).json({
-                    success: 0,
-                    data: null,
-                    message: 'Bạn cần đăng nhập để truy cập hệ thống'
-                });
-            }
+            const orderUpdated = await Orders.findOne(query);
+
+            return res.json({
+                success: 1,
+                data: orderUpdated,
+                message: '',
+            });
         } catch (error) {
             console.log(error);
             res.status(500).json({

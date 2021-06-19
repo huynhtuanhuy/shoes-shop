@@ -21,9 +21,16 @@ module.exports = {
       unique: true,
       required: true,
     },
+    description: {
+      type: 'string',
+    },
     views: {
       type: 'number',
       defaultsTo: 0
+    },
+    is_new: {
+      type: 'boolean',
+      defaultsTo: false
     },
     is_disable: {
       type: 'boolean',
@@ -31,6 +38,10 @@ module.exports = {
     },
     categories: {
       collection: 'ProductCategories',
+      via: 'product_id',
+    },
+    product_details: {
+      collection: 'ProductDetails',
       via: 'product_id',
     },
   },

@@ -33,7 +33,7 @@ module.exports = {
 
     status: {
       type: 'string',
-      isIn: ['pending', 'processing', 'shipping', 'accomplished', 'cancelled'],
+      isIn: ['pending', 'processing', 'packed', 'shipping', 'accomplished', 'cancelled'],
       defaultsTo: 'pending'
     },
 
@@ -43,6 +43,6 @@ module.exports = {
     },
   },
   schema: true,
-  tableName: 'order_product_details'
+  tableName: 'orders'
 };
 

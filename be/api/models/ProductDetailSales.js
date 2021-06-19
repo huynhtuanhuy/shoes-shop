@@ -7,6 +7,10 @@
 
 module.exports = {
   attributes: {
+    product_id: {
+      model: 'Products',
+    },
+
     product_detail_id: {
       model: 'ProductDetails',
     },

@@ -24,7 +24,11 @@ module.exports = {
     type: {
       type: 'string',
       isIn: ['basic', 'facebook', 'google'],
-      defaultsTo: 'user'
+      defaultsTo: 'basic'
+    },
+    is_admin: {
+      type: 'boolean',
+      defaultsTo: false
     },
     verify_code: 'string',
     reset_password_code: 'string',

@@ -44,16 +44,11 @@ module.exports.routes = {
   'POST /api/auth/profile': 'AuthController.updateProfile',
   'POST /api/auth/change-password': 'AuthController.changePassword',
 
-  'GET /api/project': 'ProjectController.all',
-  'GET /api/user': 'UserController.all',
+  'GET /api/categories/options': 'CategoriesController.options',
 
-  'GET /api/project/:projectId/testplan': 'TestPlanController.all',
-  'GET /api/project/:projectId/testsuite': 'TestSuiteController.all',
-  'GET /api/project/:projectId/testcase': 'TestCaseController.all',
-  'GET /api/project/:projectId/buildrelease': 'BuildReleaseController.all',
-  'GET /api/project/:projectId/milestone': 'MileStoneController.all',
-  'GET /api/project/:projectId/testexecution': 'TestExecutionController.all',
-  'GET /api/project/:projectId/member': 'ProjectMemberController.all',
+  'GET /api/users/options': 'UsersController.options',
+
+  'GET /api/dashboards': 'DashboardController.dashboardInfo',
 
   'POST /api/upload': 'FileController.upload',
 

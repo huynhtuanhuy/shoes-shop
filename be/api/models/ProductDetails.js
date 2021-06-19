@@ -7,17 +7,26 @@
 
 module.exports = {
   attributes: {
-    price: {
-      type: 'number',
-      required: true,
-    },
-
     product_id: {
       model: 'Products',
     },
     
     color_id: {
       model: 'Colors',
+    },
+    
+    size_id: {
+      model: 'Sizes',
+    },
+
+    price: {
+      type: 'number',
+      required: true,
+    },
+
+    quantity: {
+      type: 'number',
+      defaultsTo: 0,
     },
   },
   schema: true,

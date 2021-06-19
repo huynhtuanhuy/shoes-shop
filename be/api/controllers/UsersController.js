@@ -1,19 +1,20 @@
 /**
- * CategoriesController.js
+ * UserController.js
  *
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-const slug = require("slug");
 
- module.exports = {
+const bcrypt = require('bcrypt');
+
+module.exports = {
     options: async (req, res) => {
         try {
-            const categoryData = await Categories.find({});
+            const userData = await Users.find({ is_admin: false });
 
             res.json({
                 success: 1,
-                data: categoryData,
+                data: userData,
                 message: '',
             });
         } catch (error) {
@@ -28,28 +29,27 @@ const slug = require("slug");
     find: async (req, res) => {
         const { page = 1, perPage = 10, sorted = [], filtered = [] } = req.query;
         try {
-            const filter = {};
+            const filter = { is_admin: false };
 
             if (filtered && filtered.length > 0) {
                 for (let i = 0; i < filtered.length; i++) {
                     const filterItem = JSON.parse(filtered[i]);
                     if (filterItem.id && filterItem.value) {
-                        filter[filterItem.id] = filterItem.id == "parent_id" ? filterItem.value : { contains: filterItem.value };
+                        filter[filterItem.id] = { contains: filterItem.value };
                     }
                 }
             }
 
-            const total = await Categories.count(filter);
-            const categoryData = await Categories.find(filter)
+            const total = await Users.count(filter);
+            const userData = await Users.find(filter)
                 .limit(Number(perPage))
-                .skip((Number(page)-1)*Number(perPage))
-                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : [])
-                .populate('parent_id');
+                .skip((Number(page) - 1) * Number(perPage))
+                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : []);
 
             res.json({
                 success: 1,
                 data: {
-                    data: categoryData,
+                    data: userData,
                     page: Number(page),
                     total: total,
                     perPage: Number(perPage),
@@ -73,19 +73,19 @@ const slug = require("slug");
                 id,
             };
 
-            const categoryFound = await Categories.findOne(query);
+            const userFound = await Users.findOne(query);
 
-            if (!categoryFound || !categoryFound.id) {
+            if (!userFound || !userFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Danh mục sản phẩm không tồn tại!'
+                    message: 'Người dùng không tồn tại!'
                 });
             }
 
             return res.json({
                 success: 1,
-                data: categoryFound,
+                data: userFound,
                 message: '',
             });
         } catch (error) {
@@ -105,27 +105,17 @@ const slug = require("slug");
                 id,
             };
 
-            const categoryFound = await Categories.findOne(query);
+            const userFound = await Users.findOne(query);
 
-            if (!categoryFound || !categoryFound.id) {
+            if (!userFound || !userFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Danh mục sản phẩm không tồn tại!'
+                    message: 'Người dùng không tồn tại!'
                 });
             }
 
-            const productCategories = await ProductCategories.find({ category_id: categoryFound.id });
-            console.log(productCategories);
-            if (productCategories.length > 0) {
-                return res.status(400).json({
-                    success: 0,
-                    data: null,
-                    message: 'Không xóa được danh mục vì đã có sản phẩm!'
-                });
-            }
-
-            // await Categories.destroyOne({ id });
+            await Users.destroyOne({ id });
 
             return res.json({
                 success: 1,
@@ -143,35 +133,49 @@ const slug = require("slug");
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { name, parent_id } = req.body;
+        const { fullname, phone, address, email, password } = req.body;
 
         try {
+            if (email) {
+                const userExist = await Users.findOne({ email });
+    
+                if (userExist && userExist.id && userExist.id != id) {
+                    return res.status(400).json({
+                        success: 0,
+                        data: null,
+                        message: 'Đã tồn tại tài khoản với địa chỉ email này!'
+                    });
+                }
+            }
+
             const query = {
                 id,
             };
 
-            const categoryFound = await Categories.findOne(query);
+            const userFound = await Users.findOne(query);
 
-            if (!categoryFound || !categoryFound.id) {
+            if (!userFound || !userFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Danh mục sản phẩm không tồn tại!'
+                    message: 'Người dùng không tồn tại!'
                 });
             }
 
-            await Categories.updateOne({ id })
+            await Users.updateOne({ id })
                 .set({
-                    name: name || categoryFound.name,
-                    slug: slug(name || categoryFound.name),
-                    parent_id: parent_id || categoryFound.parent_id,
+                    fullname: fullname || userFound.fullname,
+                    phone: phone || userFound.phone,
+                    address: address || userFound.address,
+                    email: email || userFound.email,
+                    password: password ? bcrypt.hashSync(password, 12) : userFound.password,
                 });
 
-            const categoryUpdated = await Categories.findOne(query);
+            const userUpdated = await Users.findOne(query);
 
             return res.json({
                 success: 1,
-                data: categoryUpdated,
+                data: userUpdated,
                 message: '',
             });
         } catch (error) {
@@ -184,18 +188,46 @@ const slug = require("slug");
         }
     },
     create: async (req, res) => {
-        const { name, parent_id } = req.body;
-
+        const { fullname, phone, address, username, email, password } = req.body;
         try {
-            const categoryCreated = await Categories.create({
-                name,
-                slug: slug(name),
-                parent_id,
+            const userFound = (await Users.find({
+                or: [
+                    { username },
+                    { email }
+                ]
+            }))[0];
+
+            if (userFound && userFound.id) {
+                if (userFound.username == username) {
+                    return res.status(400).json({
+                        success: 0,
+                        data: null,
+                        message: 'Đã tồn tại tài khoản với tên đăng nhập này!'
+                    });
+                }
+                
+                if (email && userFound.email == email) {
+                    return res.status(400).json({
+                        success: 0,
+                        data: null,
+                        message: 'Đã tồn tại tài khoản với địa chỉ email này!'
+                    });
+                }
+            }
+
+            const userCreated = await Users.create({
+                fullname,
+                phone,
+                address,
+                username,
+                email,
+                password: bcrypt.hashSync(password, 12),
+                type: 'basic',
             }).fetch();
 
             return res.json({
                 success: 1,
-                data: categoryCreated,
+                data: userCreated,
                 message: '',
             });
         } catch (error) {

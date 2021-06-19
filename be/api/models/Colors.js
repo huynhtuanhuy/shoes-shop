@@ -10,13 +10,11 @@ module.exports = {
     color_name: {
       type: 'string',
       required: true,
-      unique: true,
     },
 
     color_code: {
       type: 'string',
       required: true,
-      unique: true,
     },
   },
   schema: true,

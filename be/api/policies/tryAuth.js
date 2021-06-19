@@ -8,8 +8,8 @@ module.exports = async (req, res, next) => {
   const { userInfo } = req.session;
   
   if (userInfo) {
-    const { email } = req.session.userInfo;
-    const userFound = await User.findOne({ email });
+    const { username } = req.session.userInfo;
+    const userFound = await Users.findOne({ username });
 
     if (!userFound || !userFound.id) {
       return res.status(404).json({

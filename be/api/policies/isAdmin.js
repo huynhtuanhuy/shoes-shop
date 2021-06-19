@@ -5,7 +5,7 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Policies
  */
 module.exports = function (req, res, next) {
-  if (!req.user || req.user.memberType !== 'admin') {
+  if (!req.user || !req.user.is_admin) {
     return res.status(401).json({
       success: 0,
       data: null,

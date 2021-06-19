@@ -7,10 +7,6 @@
 
 module.exports = {
   attributes: {
-    product_detail_id: {
-      model: 'ProductDetails',
-    },
-
     size: {
       type: 'string',
       required: true,
@@ -20,13 +16,8 @@ module.exports = {
       type: 'string',
       required: true,
     },
-
-    quantity: {
-      type: 'number',
-      defaultsTo: 0,
-    },
   },
   schema: true,
-  tableName: 'product_detail_sizes'
+  tableName: 'sizes'
 };
 

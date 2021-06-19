@@ -16,7 +16,7 @@ module.exports = {
 	checkAuth: async (req, res) => {
 		if (req.session.userInfo && req.session.userInfo.username) {
 			const { username } = req.session.userInfo;
-			const userFound = await User.findOne({ username });
+			const userFound = await Users.findOne({ username });
 			if (!userFound || !userFound.id) {
 				return res.status(404).json({
 					success: 0,
@@ -25,29 +25,11 @@ module.exports = {
 				});
 			}
 
-			if (userFound.memberType === 'banned') {
-				return res.status(401).json({
-					success: 0,
-					data: null,
-					message: 'Tài khoản của bạn đã bị khóa!'
-				});
-			}
-
-			if (userFound.memberType === 'unverified') {
-				return res.status(401).json({
-					success: 0,
-					data: null,
-					message: 'Bạn cần xác thực địa chỉ email để được truy cập vào hệ thống!'
-				});
-			}
-
 			res.json({
 				success: 1,
 				data: {
 					...req.session.userInfo,
-					memberType: userFound.memberType,
-					avatar: userFound.avatar,
-					about: userFound.about,
+					address: userFound.address,
 					phone: userFound.phone,
 				},
 				message: '',
@@ -61,11 +43,11 @@ module.exports = {
 		}
 	},
 	updateProfile: async (req, res) => {
-		const { fullname, phone, avatar, about } = req.body;
+		const { fullname, phone, address } = req.body;
 
 		if (req.session.userInfo && req.session.userInfo.username) {
 			const { username } = req.session.userInfo;
-			const userFound = await User.findOne({ username });
+			const userFound = await Users.findOne({ username });
 			if (!userFound || !userFound.id) {
 				return res.status(404).json({
 					success: 0,
@@ -74,28 +56,11 @@ module.exports = {
 				});
 			}
 
-			if (userFound.memberType === 'banned') {
-				return res.status(401).json({
-					success: 0,
-					data: null,
-					message: 'Tài khoản của bạn đã bị khóa!'
-				});
-			}
-
-			if (userFound.memberType === 'unverified') {
-				return res.status(401).json({
-					success: 0,
-					data: null,
-					message: 'Bạn cần xác thực địa chỉ email để được truy cập vào hệ thống!'
-				});
-			}
-
-			await User.updateOne({ id: userFound.id })
+			await Users.updateOne({ id: userFound.id })
 				.set({
 					fullname: fullname || userFound.fullname,
-					avatar: avatar || userFound.avatar,
+					address: address,
 					phone: phone,
-					about: about,
 				});
 
 			res.json({
@@ -108,69 +73,6 @@ module.exports = {
 				success: 0,
 				data: null,
 				message: 'Bạn cần đăng nhập để truy cập hệ thống'
-			});
-		}
-	},
-	verifyEmail: async (req, res) => {
-		try {
-			const { code } = req.body;
-
-			if (!code) {
-				return res.status(400).json({
-					success: 0,
-					data: null,
-					message: 'Thiếu mã xác nhận.'
-				});
-			}
-
-			const userFound = await User.findOne({ verifyCode: code });
-
-			if (!userFound || !userFound.id) {
-				return res.status(400).json({
-					success: 0,
-					data: null,
-					message: 'Mã xác nhận sai, vui lòng thử lại.',
-				});
-			}
-
-			if (userFound.memberType === 'unverified') {
-				const now = new Date();
-				const userUpdated = await User.updateOne({ id: userFound.id })
-					.set({
-						memberType: 'trial',
-						expiredDate: new Date(now.setDate(now.getDate() + 15)).toISOString(),
-						verifyCode: '',
-					});
-
-				const affiliate = await Affiliate.findOne({ customer: userFound.id });
-
-				if (affiliate && affiliate.id && affiliate.status == 'not-verified') {
-					await Affiliate.updateOne({ id: affiliate.id }).set({ status: 'not-bought' });
-				}
-
-				req.session.userInfo = { email: userUpdated.email, name: userUpdated.name, id: userUpdated.id };
-				return res.json({
-					success: 1,
-					data: {
-						...req.session.userInfo,
-						memberType: userUpdated.memberType,
-						expiredDate: userUpdated.expiredDate,
-					},
-					message: '',
-				});
-			} else {
-				return res.status(400).json({
-					success: 0,
-					data: null,
-					message: 'Tài khoản này đã được xác thực!'
-				});
-			}
-		} catch (error) {
-			console.log(error);
-			return res.status(500).json({
-				success: 0,
-				data: null,
-				message: 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
 			});
 		}
 	},
@@ -186,7 +88,7 @@ module.exports = {
 		}
 
 		try {
-			const userFound = await User.findOne({ username });
+			const userFound = await Users.findOne({ username });
 
 			if (!userFound || !userFound.id) {
 				return res.status(404).json({
@@ -196,36 +98,19 @@ module.exports = {
 				});
 			}
 
-			if (userFound.memberType === 'banned') {
-				return res.status(401).json({
-					success: 0,
-					data: null,
-					message: 'Tài khoản của bạn đã bị khóa!'
-				});
-			}
-
-			if (userFound.memberType === 'unverified') {
-				return res.status(401).json({
-					success: 0,
-					data: null,
-					message: 'Bạn cần xác thực địa chỉ email để được truy cập vào hệ thống!'
-				});
-			}
-
 			if (bcrypt.compareSync(password, userFound.password)) {
 				req.session.userInfo = {
 					username,
 					email: userFound.email,
 					fullname: userFound.fullname,
+					is_admin: userFound.is_admin,
 					id: userFound.id
 				};
 				return res.json({
 					success: 1,
 					data: {
 						...req.session.userInfo,
-						memberType: userFound.memberType,
-						avatar: userFound.avatar,
-						about: userFound.about,
+						address: userFound.address,
 						phone: userFound.phone,
 					},
 					message: '',
@@ -261,7 +146,7 @@ module.exports = {
 			const hashPassword = bcrypt.hashSync(password, 12);
 			const now = new Date();
 
-			const userFoundByUsername = await User.findOne({ username });
+			const userFoundByUsername = await Users.findOne({ username });
 
 			if (userFoundByUsername && userFoundByUsername.id) {
 				return res.status(400).json({
@@ -271,7 +156,7 @@ module.exports = {
 				});
 			}
 
-			const userFoundByEmail = await User.findOne({ email });
+			const userFoundByEmail = await Users.findOne({ email });
 
 			if (userFoundByEmail && userFoundByEmail.id) {
 				return res.status(400).json({
@@ -281,7 +166,7 @@ module.exports = {
 				});
 			}
 
-			const user = await User.create({
+			const user = await Users.create({
 				email,
 				username,
 				password: hashPassword,
@@ -294,7 +179,6 @@ module.exports = {
 					username,
 					email,
 					fullname,
-					memberType: user.memberType,
 				},
 				message: '',
 			});
@@ -331,7 +215,7 @@ module.exports = {
 		}
 
 		try {
-			const userFound = await User.findOne({ email });
+			const userFound = await Users.findOne({ email });
 
 			if (!userFound || !userFound.id) {
 				return res.status(404).json({
@@ -347,7 +231,7 @@ module.exports = {
 
 			const hashPassword = bcrypt.hashSync(passwordNew, 12);
 
-			await User.updateOne({ id: userFound.id })
+			await Users.updateOne({ id: userFound.id })
 				.set({
 					password: hashPassword,
 				});
@@ -392,7 +276,7 @@ module.exports = {
 		try {
 			if (req.session.userInfo && req.session.userInfo.username) {
 				const { username } = req.session.userInfo;
-				const userFound = await User.findOne({ username });
+				const userFound = await Users.findOne({ username });
 
 				if (!userFound || !userFound.id) {
 					return res.status(401).json({
@@ -412,7 +296,7 @@ module.exports = {
 
 				const hashPassword = bcrypt.hashSync(new_password, 12);
 
-				await User.updateOne({ id: userFound.id })
+				await Users.updateOne({ id: userFound.id })
 					.set({
 						password: hashPassword,
 					});
