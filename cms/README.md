@@ -1,144 +1,174 @@
-<p align="center">
-  <a href="https://coreui.io/">
-    <img
-      src="https://coreui.io/images/brand/coreui-signet.svg"
-      alt="CoreUI logo"
-      width="200"
-    />
-  </a>
-</p>
+[![@coreui coreui](https://img.shields.io/badge/@coreui%20-coreui-lightgrey.svg?style=flat-square)](https://github.com/coreui/coreui)
+[![npm package][npm-coreui-badge]][npm-coreui]
+[![NPM downloads][npm-coreui-download]][npm-coreui]  
+[![@coreui react](https://img.shields.io/badge/@coreui%20-react-lightgrey.svg?style=flat-square)](https://github.com/coreui/react)
+[![npm package][npm-coreui-react-badge]][npm-coreui-react]
+[![NPM downloads][npm-coreui-react-download]][npm-coreui-react]  
+[![npm next][npm-next]][npm]
 
-<h3 align="center">CoreUI</h3>
+[npm-coreui]: https://www.npmjs.com/package/@coreui/coreui
+[npm-coreui-badge]: https://img.shields.io/npm/v/@coreui/coreui.png?style=flat-square
+[npm-coreui-download]: https://img.shields.io/npm/dm/@coreui/coreui.svg?style=flat-square
+[npm-coreui-react]: https://www.npmjs.com/package/@coreui/react
+[npm-coreui-react-badge]: https://img.shields.io/npm/v/@coreui/react.png?style=flat-square
+[npm-coreui-react-download]: https://img.shields.io/npm/dm/@coreui/react.svg?style=flat-square
+[npm-next]: https://img.shields.io/npm/v/@coreui/react/next.png?style=flat-square
+[npm]: https://www.npmjs.com/package/@coreui/react
 
-<p align="center">
-  React.js Components Library built on top of Bootstrap 5 and TypeScript.
-  <br>
-  <a href="https://coreui.io/react/docs/4.0/getting-started/introduction"><strong>Explore CoreUI docs »</strong></a>
-  <br>
-  <br>
-  <a href="https://github.com/coreui/coreui-react/issues/new?template=bug_report.md">Report bug</a>
-  ·
-  <a href="https://github.com/coreui/coreui-react/issues/new?template=feature_request.md">Request feature</a>
-  ·
-  <a href="https://community.coreui.io/">Community</a>
-  ·
-  <a href="https://blog.coreui.io/">Blog</a>
-</p>
+# CoreUI Free React Admin Template v3
 
+CoreUI is meant to be the UX game changer. Pure & transparent code is devoid of redundant components, so the app is light enough to offer ultimate user experience. This means mobile devices also, where the navigation is just as easy and intuitive as on a desktop or laptop. The CoreUI Layout API lets you customize your project for almost any device – be it Mobile, Web or WebApp – CoreUI covers them all!
 
-## Table of contents
+## Table of Contents
 
-- [Quick start](#quick-start)
-- [Status](#status)
-- [What's included](#whats-included)
-- [Bugs and feature requests](#bugs-and-feature-requests)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [Community](#community)
-- [Versioning](#versioning)
-- [Creators](#creators)
-- [Copyright and license](#copyright-and-license)
+* [Versions](#versions)
+* [CoreUI Pro](#coreui-pro)
+* [Installation](#installation)
+* [Basic usage](#create-react-app)
+* [What's included](#whats-included)
+* [Documentation](#documentation)
+* [Versioning](#versioning)
+* [Creators](#creators)
+* [Community](#community)
+* [Copyright and License](#copyright-and-license)
 
-## Quick start
+## Versions
 
-### Instalation
+* [CoreUI Free Bootstrap Admin Template](https://github.com/coreui/coreui-free-bootstrap-admin-template)
+* [CoreUI Free Angular 9+ Admin Template](https://github.com/coreui/coreui-free-angular-admin-template)
+* [CoreUI Free React.js Admin Template](https://github.com/coreui/coreui-free-react-admin-template)
+* [CoreUI Free Vue.js Admin Template](https://github.com/coreui/coreui-free-vue-admin-template)
+* [CoreUI Free Laravel Admin Template](https://github.com/coreui/coreui-free-laravel-admin-template)
+* [CoreUI Free Vue.js + Laravel Admin Template](https://github.com/coreui/coreui-free-vue-laravel-admin-template)
 
-Several quick start options are available:
+## CoreUI Pro
 
-- [Download the latest release](https://github.com/coreui/coreui-react/archive/v4.0.0-alpha.0.zip)
-- Clone the repo: `git clone https://github.com/coreui/coreui-react.git`
-- Install with [npm](https://www.npmjs.com/): `npm install @coreui/react@next`
-- Install with [yarn](https://yarnpkg.com/): `yarn add @coreui/react@next`
+**Only customers with [Enterpise Membership Plan](https://coreui.io/pro/#buy) have access to private github CoreUI Pro repository.**
 
-Read the [Getting started page](https://coreui.io/react/docs/4.0/getting-started/introduction/) for information on the framework contents, templates and examples, and more.
+* 💪  [CoreUI Pro Bootstrap Admin Template](https://coreui.io/pro/)
+* 💪  [CoreUI Pro Angular 9+ Admin Template](https://coreui.io/pro/angular)
+* 💪  [CoreUI Pro React Admin Template](https://coreui.io/pro/react)
+* 💪  [CoreUI Pro Vue Admin Template](https://coreui.io/pro/vue)
+* 💪  [CoreUI Pro Laravel Admin Template](https://coreui.io/pro/laravel/)
+* 💪  [CoreUI Pro Vue.js + Laravel Admin Template](https://coreui.io/pro/vue-laravel/)
 
-### Stylesheets
+## Installation
 
-React components are styled using `@coreui/coreui` CSS library, but you can use them also with bootstrap CSS library. That is possible because `@coreui/coreui` library is compatible with bootstrap, it just extends its functionalities. The only exception is custom CoreUI components, which don't exist in the Bootstrap ecosystem.
+### Clone repo
 
-#### CoreUI CSS files
+``` bash
+# clone the repo
+$ git clone https://github.com/coreui/coreui-free-react-admin-template.git my-project
 
-##### Installation
+# go into app's directory
+$ cd my-project
+
+# install app's dependencies
+$ npm install
+```
+
+### Copy and Paste
+
+Copy all your files to your project folder and then,
+
+``` bash
+# go into app's directory
+$ cd my-project
+
+# install app's dependencies
+$ npm install
+```
+
+## Create React App
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app)
+
+see also:
+[CRA docs](https://create-react-app.dev/docs/getting-started)
+
+### Basic usage
+
+``` bash
+# dev server with hot reload at http://localhost:3000
+$ npm start
+```
+
+Navigate to [http://localhost:3000](http://localhost:3000). The app will automatically reload if you change any of the source files.
+
+### Build
+
+Run `build` to build the project. The build artifacts will be stored in the `build/` directory.
 
 ```bash
-npm install @coreui/coreui@next
+# build for production with minification
+$ npm run build
 ```
 
-##### Basic usage
+## What's included
 
-```js
-import "@coreui/dist/css/coreui.min.css";
+Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
+
 ```
-
-#### Bootstrap CSS files
-
-##### Installation
-
-```bash
-npm install bootstrap@next
+CoreUI-React#v3.0.0
+├── public/          #static files
+│   └── index.html   #html template
+│
+├── src/             #project root
+│   ├── assets/      #assets - js icons object
+│   ├── containers/  #container source - template layout
+|   │   ├── _nav.js  #sidebar config
+|   │   └── ...      
+│   ├── scss/        #user scss/css source
+│   ├── views/       #views source
+│   ├── App.js
+│   ├── App.test.js
+│   ├── polyfill.js
+│   ├── index.js
+│   ├── routes.js    #routes config
+│   └── store.js     #template state example 
+│
+└── package.json
 ```
-
-##### Basic usage
-
-```js
-import "bootstrap/dist/css/bootstrap.min.css";
-```
-
-## Status
-
-[![Build Status](https://github.com/coreui/coreui-react/workflows/JS%20Tests/badge.svg?branch=main)](https://github.com/coreui/coreui-react/actions?query=workflow%3AJS+Tests+branch%3Amain)
-[![npm version](https://img.shields.io/npm/v/@coreui/react)](https://www.npmjs.com/package/@coreui/react)
-[![peerDependencies Status](https://img.shields.io/david/peer/coreui/coreui)](https://david-dm.org/coreui/coreui?type=peer)
-[![devDependency Status](https://img.shields.io/david/dev/coreui/coreui)](https://david-dm.org/coreui/coreui?type=dev)
-[![Coverage Status](https://img.shields.io/coveralls/github/coreui/coreui-react/v4-dev)](https://coveralls.io/github/coreui/coreui-react?branch=v4-dev)
-
-## Bugs and feature requests
-
-Have a bug or a feature request? Please first read the [issue guidelines](https://github.com/coreui/coreui-react/blob/v4-dev/.github/CONTRIBUTING.md#using-the-issue-tracker) and search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://github.com/coreui/coreui-react/issues/new).
 
 ## Documentation
 
-The documentation for the CoreUI & CoreUI PRO is hosted at our website [CoreUI for React](https://coreui.io/react/docs/4.0/getting-started/introduction)
+The documentation for the CoreUI Admin Template is hosted at our website [CoreUI for React](https://coreui.io/react/)
 
-### Running documentation locally
-
-1. Run `yarn install` to install the Node.js dependencies, including Hugo (the site builder).
-2. Run `yarn docz:build` (or a specific npm script) to rebuild distributed CSS and JavaScript files, as well as our docs assets.
-3. From the root directory, run `yarn docz:serve` in the command line.
-4. Open `http://localhost:3000/` in your browser, and voilà.
-
-## Contributing
-
-Please read through our [contributing guidelines](https://github.com/coreui/coreui-react/blob/v4-dev/.github/CONTRIBUTING.md). Included are directions for opening issues, coding standards, and notes on development.
-
-Editor preferences are available in the [editor config](https://github.com/coreui/coreui-react/blob/v4-dev/.editorconfig) for easy use in common text editors. Read more and download plugins at <https://editorconfig.org/>.
-
-## Community
-
-Stay up to date on the development of CoreUI and reach out to the community with these helpful resources.
-
-- Read and subscribe to [The Official CoreUI Blog](https://coreui.io/blog/).
-- Join [the official Community](https://community.coreui.io/).
-
-You can also follow [@core_ui on Twitter](https://twitter.com/core_ui).
+### :film_strip: How to setup coreui react theme in laravel. Video tutorial available [here](https://youtu.be/HVVpbpNUJ8M)
 
 ## Versioning
 
-For transparency into our release cycle and in striving to maintain backward compatibility, CoreUI is maintained under [the Semantic Versioning guidelines](http://semver.org/).
+For transparency into our release cycle and in striving to maintain backward compatibility, CoreUI Free Admin Template is maintained under [the Semantic Versioning guidelines](http://semver.org/).
 
-See [the Releases section of our project](https://github.com/coreui/coreui-react/releases) for changelogs for each release version.
+See [the Releases section of our project](https://github.com/coreui/coreui-free-react-admin-template/releases) for changelogs for each release version.
 
 ## Creators
 
 **Łukasz Holeczek**
+* <https://twitter.com/lukaszholeczek>
+* <https://github.com/mrholek>
+* <https://github.com/coreui>
 
-- <https://twitter.com/lukaszholeczek>
-- <https://github.com/mrholek>
+**CoreUI team**
+* https://github.com/orgs/coreui/people
 
-**Andrzej Kopański**
+## Community
 
-- <https://github.com/xidedix>
+Get updates on CoreUI's development and chat with the project maintainers and community members.
 
-## Copyright and license
+- Follow [@core_ui on Twitter](https://twitter.com/core_ui).
+- Read and subscribe to [CoreUI Blog](https://coreui.ui/blog/).
 
-Copyright 2021 creativeLabs Łukasz Holeczek. Code released under the [MIT License](https://github.com/coreui/coreui-react/blob/v4-dev/LICENSE). Docs released under [Creative Commons](https://creativecommons.org/licenses/by/3.0/).
+
+## Copyright and License
+
+copyright 2020 creativeLabs Łukasz Holeczek.   
+
+ 
+Code released under [the MIT license](https://github.com/coreui/coreui-free-react-admin-template/blob/master/LICENSE).
+There is only one limitation you can't can’t re-distribute the CoreUI as stock. You can’t do this if you modify the CoreUI. In past we faced some problems with persons who tried to sell CoreUI based templates.
+
+## Support CoreUI Development
+
+CoreUI is an MIT licensed open source project and completely free to use. However, the amount of effort needed to maintain and develop new features for the project is not sustainable without proper financial backing. You can support development by buying [CoreUI Pro Version](https://coreui.io/pro/).
+
+We're also open to conversations regarding custom sponsorship / consulting arrangements. Get in touch on [Twitter](https://twitter.com/lukaszholeczek).
