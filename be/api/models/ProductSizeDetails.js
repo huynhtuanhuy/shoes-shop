@@ -1,5 +1,5 @@
 /**
- * ProductDetailImages.js
+ * ProductSizeDetails.js
  *
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
@@ -7,21 +7,20 @@
 
 module.exports = {
   attributes: {
-    product_id: {
-      model: 'Products',
+    product_detail_id: {
+      model: 'ProductDetails',
+    },
+    
+    size_id: {
+      model: 'Sizes',
     },
 
-    image_path: {
-      type: 'string',
-      required: true,
-    },
-
-    thumb_path: {
-      type: 'string',
-      required: true,
+    quantity: {
+      type: 'number',
+      defaultsTo: 0,
     },
   },
   schema: true,
-  tableName: 'product_detail_images'
+  tableName: 'product_size_details'
 };
 

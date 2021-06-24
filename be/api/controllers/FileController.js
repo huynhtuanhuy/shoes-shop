@@ -33,14 +33,14 @@ module.exports = {
 						});
 					} else {
 						try {
-							const file = uploadedFiles[0];
-							const filePath = path.parse(file.sourcePath || file.path || file.fd);
+							const filePaths = uploadedFiles.map(file => path.parse(file.sourcePath || file.path || file.fd));
 
 							res.json({
 								success: true,
-								data: {},
+								data: {
+									urls: filePaths.map(filePath => `images/${year}/${month}/${filePath.name}${filePath.ext}`),
+								},
 								message: '',
-								uri: `images/${year}/${month}/${filePath.name}${filePath.ext}`,
 							});
 						} catch (error) {
 							console.log(error);

@@ -14,19 +14,15 @@ module.exports = {
     color_id: {
       model: 'Colors',
     },
-    
-    size_id: {
-      model: 'Sizes',
-    },
 
     price: {
       type: 'number',
       required: true,
     },
 
-    quantity: {
-      type: 'number',
-      defaultsTo: 0,
+    sizes: {
+      collection: 'ProductSizeDetails',
+      via: 'product_detail_id',
     },
   },
   schema: true,

@@ -64,11 +64,12 @@
             }
 
             const order_product_details = await OrderProductDetails.find({ order_id: orderFound.id });
+            
             const product_details = await ProductDetails.find({
                 id: {
                     in: order_product_details.map(item => item.product_detail_id),
                 }
-            }).populate('product_id').populate('color_id').populate('size_id');
+            }).populate('product_id').populate('color_id');
 
             return res.json({
                 success: 1,
@@ -77,8 +78,8 @@
                     order_product_details: order_product_details.map(item => {
                         return {
                             ...item,
-                            product_detail: product_details.filter(_item => _item.id == item.product_detail_id)[0]
-                        }
+                            product_detail: product_details.filter(_item => _item.id == item.product_detail_id)[0],
+                        };
                     }),
                 },
                 message: '',
@@ -94,14 +95,14 @@
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { user_id, customer_fullname, customer_phone, customer_email, customer_address, status, total } = req.body;
+        const { user_id, customer_fullname, customer_phone, customer_email, customer_address, status, order_product_details, total } = req.body;
 
         try {
             const query = {
                 id,
             };
 
-            const orderFound = await Orders.findOne(query);
+            const orderFound = await Orders.findOne(query).populate('order_product_details');
 
             if (!orderFound || !orderFound.id) {
                 return res.status(404).json({
@@ -119,8 +120,46 @@
                     customer_email,
                     customer_address,
                     status,
-                    total
+                    total: order_product_details.reduce((total, order_detail) => total + (order_detail.quantity*order_detail.sale_price), 0)
                 });
+
+            if (order_product_details) {
+                const orderProductDetailsToDelete = [];
+                for (let i = 0; i < orderFound.order_product_details.length; i++) {
+                    if (!order_product_details.filter(order_product_detail => order_product_detail.id).map(order_product_detail => order_product_detail.id).includes(orderFound.order_product_details[i].id)) {
+                        orderProductDetailsToDelete.push(orderFound.order_product_details[i].id);
+                    }
+                }
+                await OrderProductDetails.destroy({
+                    id: {
+                        in: orderProductDetailsToDelete
+                    }
+                });
+    
+                for (let i = 0; i < order_product_details.length; i++) {
+                    const order_product_detail = order_product_details[i];
+                    if (!order_product_detail.id) {
+                        await OrderProductDetails.create({
+                            order_id: orderFound.id,
+                            product_detail_id: order_product_detail.product_detail_id,
+                            product_size_detail_id: order_product_detail.product_size_detail_id,
+                            quantity: order_product_detail.quantity,
+                            price: order_product_detail.price,
+                            sale_price: order_product_detail.sale_price,
+                        });
+                    } else {
+                        await OrderProductDetails.updateOne({
+                            id: order_product_detail.id
+                        }).set({
+                            product_detail_id: order_product_detail.product_detail_id,
+                            product_size_detail_id: order_product_detail.product_size_detail_id,
+                            quantity: order_product_detail.quantity,
+                            price: order_product_detail.price,
+                            sale_price: order_product_detail.sale_price,
+                        });
+                    }
+                }
+            }
 
             const orderUpdated = await Orders.findOne(query);
 

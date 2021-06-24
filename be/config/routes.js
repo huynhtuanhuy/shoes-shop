@@ -48,7 +48,15 @@ module.exports.routes = {
 
   'GET /api/users/options': 'UsersController.options',
 
+  'GET /api/colors/options': 'ColorsController.options',
+
+  'GET /api/sizes/options': 'SizesController.options',
+
   'GET /api/dashboards': 'DashboardController.dashboardInfo',
+
+  'GET /api/statistics/order': 'StatisticController.totalOrder', 
+  'GET /api/statistics/income': 'StatisticController.totalIncome', 
+  'GET /api/statistics/inventory': 'StatisticController.inventory', 
 
   'POST /api/upload': 'FileController.upload',
 

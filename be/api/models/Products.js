@@ -44,6 +44,10 @@ module.exports = {
       collection: 'ProductDetails',
       via: 'product_id',
     },
+    images: {
+      collection: 'ProductDetailImages',
+      via: 'product_id',
+    },
   },
   schema: true,
   tableName: 'products'

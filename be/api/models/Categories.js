@@ -15,7 +15,6 @@ module.exports = {
     slug: {
       type: 'string',
       required: true,
-      unique: true,
     },
 
     parent_id: {

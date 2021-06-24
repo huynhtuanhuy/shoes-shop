@@ -15,6 +15,10 @@ module.exports = {
       model: 'ProductDetails',
     },
 
+    product_size_detail_id: {
+      model: 'ProductSizeDetails',
+    },
+
     quantity: {
       type: 'number',
       required: true,

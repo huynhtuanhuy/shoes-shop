@@ -41,6 +41,11 @@ module.exports = {
       type: 'number',
       required: true,
     },
+
+    order_product_details: {
+      collection: 'OrderProductDetails',
+      via: 'order_id',
+    },
   },
   schema: true,
   tableName: 'orders'

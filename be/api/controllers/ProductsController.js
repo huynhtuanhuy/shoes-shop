@@ -12,7 +12,7 @@ const slug = require('slug');
         try {
             const productData = await Products.find({}).populate('categories').populate('product_details');
 
-            const categories = await Categories.find({
+            const categories = await ProductCategories.find({
                 id: {
                     in: productData.reduce((total, item) => {
                         return [
@@ -32,7 +32,13 @@ const slug = require('slug');
                         ]
                     }, [])
                 }
-            }).populate('color_id').populate('size_id');
+            }).populate('color_id').populate('sizes');
+
+            const product_size_details = await ProductSizeDetails.find({
+                id: {
+                    in: product_details.reduce((total, item) => [...total, ...item.sizes.map(item => item.id)], []),
+                }
+            }).populate('size_id');
 
             res.json({
                 success: 1,
@@ -45,8 +51,11 @@ const slug = require('slug');
                                 category: categories.filter(item => item.id == category.category_id)[0],
                             }
                         }),
-                        product_details: (product.product_details || []).map(product_detail => {
-                            return product_details.filter(item => item.id == product_detail.id)[0];
+                        product_details: product_details.filter(item => product.product_details.map(_item => _item.id).includes(item.id)).map(item => {
+                            return {
+                                ...item,
+                                sizes: product_size_details.filter(size => item.sizes.map(_item => _item.id).includes(size.id))
+                            }
                         }),
                     }
                 }),
@@ -131,7 +140,7 @@ const slug = require('slug');
                 id,
             };
 
-            const productFound = await Products.findOne(query).populate('categories').populate('product_details');
+            const productFound = await Products.findOne(query).populate('categories').populate('product_details').populate('images');
 
             if (!productFound || !productFound.id) {
                 return res.status(404).json({
@@ -141,17 +150,35 @@ const slug = require('slug');
                 });
             }
 
+            const categories = await ProductCategories.find({
+                id: {
+                    in: productFound.categories.map(item => item.id),
+                }
+            }).populate('category_id');
+
             const product_details = await ProductDetails.find({
                 id: {
                     in: productFound.product_details.map(item => item.id),
                 }
-            }).populate('size_id').populate('color_id');
+            }).populate('color_id').populate('sizes');
+
+            const sizes = await ProductSizeDetails.find({
+                id: {
+                    in: product_details.reduce((total, item) => [...total, ...item.sizes.map(sizeItem => sizeItem.id)], []),
+                }
+            }).populate('size_id');
 
             return res.json({
                 success: 1,
                 data: {
                     ...productFound,
-                    product_details,
+                    categories,
+                    product_details: product_details.map(product_detail => {
+                        return {
+                            ...product_detail,
+                            sizes: sizes.filter(size => size.product_detail_id == product_detail.id)
+                        }
+                    }),
                 },
                 message: '',
             });
@@ -203,24 +230,14 @@ const slug = require('slug');
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { name, sku, is_disable, description, is_new, categories, product_details } = req.body;
+        const { name, is_disable, description, is_new, categories, product_details, images } = req.body;
 
         try {
-            const productExist = await Products.findOne({ sku });
-
-            if (productExist && productExist.id && productExist.id != id) {
-                return res.status(400).json({
-                    success: 0,
-                    data: null,
-                    message: 'Đã tồn tại sản phẩm với mã SKU này!'
-                });
-            }
-
             const query = {
                 id,
             };
 
-            const productFound = await Products.findOne(query).populate('categories').populate('product_details');
+            const productFound = await Products.findOne(query).populate('categories').populate('product_details').populate('images');
 
             if (!productFound || !productFound.id) {
                 return res.status(404).json({
@@ -234,11 +251,34 @@ const slug = require('slug');
                 .set({
                     name: name || productFound.name,
                     slug: slug(name || productFound.name),
-                    sku: sku || productFound.sku,
                     description,
                     is_new,
                     is_disable,
                 });
+
+            if (images) {
+                const imagesToDelete = [];
+                for (let i = 0; i < productFound.images.length; i++) {
+                    if (!images.filter(image => image.id).map(image => image.id).includes(productFound.images[i].id)) {
+                        imagesToDelete.push(productFound.images[i].id);
+                    }
+                }
+                await ProductDetailImages.destroy({
+                    id: {
+                        in: imagesToDelete
+                    }
+                });
+    
+                for (let i = 0; i < images.length; i++) {
+                    if (!images[i].id) {
+                        const productDetailImageCreated = await ProductDetailImages.create({
+                            product_id: id,
+                            image_path: images[i].url,
+                            thumb_path: images[i].url,
+                        }).fetch();
+                    }
+                }
+            }
 
             if (categories) {
                 const categoriesToDelete = [];
@@ -264,62 +304,52 @@ const slug = require('slug');
             }
 
             if (product_details) {
-                // const productDetailsToDelete = [];
-                // for (let i = 0; i < productFound.product_details.length; i++) {
-                //     if (!product_details.includes(productFound.product_details[i].category_id)) {
-                //         productDetailsToDelete.push(productFound.product_details[i].id);
-                //     }
-                // }
-                // await ProductDetails.destroy({
-                //     id: {
-                //         in: productDetailsToDelete
-                //     }
-                // });
-
                 for (let i = 0; i < product_details.length; i++) {
                     const product_detail = product_details[i];
 
                     if (!product_detail.id) {
-                        const colorCreated = await Colors.create({
-                            color_name: product_detail.color_name,
-                            color_code: product_detail.color_code,
-                        }).fetch();
-                        
-                        const sizeCreated = await Sizes.create({
-                            size: product_detail.size,
-                            size_code: product_detail.size_code,
-                        }).fetch();
-                        
-                        const productDetail = await ProductDetails.create({
+                        const productDetailCreated = await ProductDetails.create({
                             product_id: productFound.id,
-                            color_id: colorCreated.id,
-                            size_id: sizeCreated.id,
+                            color_id: product_detail.color_id,
                             price: product_detail.price,
-                            quantity: product_detail.quantity,
                         }).fetch();
+
+                        if (product_detail.sizes && product_detail.sizes.length > 0) {
+                            for (let j = 0; j < product_detail.sizes.length; j++) {
+                                const size_detail = product_detail.sizes[j];
+                        
+                                const productSizeDetailCreated = await ProductSizeDetails.create({
+                                    product_detail_id: productDetailCreated.id,
+                                    size_id: size_detail.size_id,
+                                    quantity: size_detail.quantity,
+                                }).fetch();
+                            }
+                        }
                     } else {
                         await ProductDetails.updateOne({
                             id: product_detail.id
                         }).set({
+                            color_id: product_detail.color_id,
                             price: product_detail.price,
-                            quantity: product_detail.quantity,
                         });
 
-                        if (product_detail.color_id) {
-                            await Colors.updateOne({
-                                id: product_detail.color_id
-                            }).set({
-                                color_name: product_detail.color_name,
-                                color_code: product_detail.color_code,
-                            });
-                        }
-                        if (product_detail.size_id) {
-                            await Sizes.updateOne({
-                                id: product_detail.size_id
-                            }).set({
-                                size: product_detail.size,
-                                size_code: product_detail.size_code,
-                            });
+                        for (let j = 0; j < product_detail.sizes.length; j++) {
+                            const product_size_detail = product_detail.sizes[j];
+                            
+                            if (!product_size_detail.id) {
+                                const productSizeDetailCreated = await ProductSizeDetails.create({
+                                    product_detail_id: product_detail.id,
+                                    size_id: product_size_detail.size_id,
+                                    quantity: product_size_detail.quantity,
+                                }).fetch();
+                            } else {
+                                await ProductSizeDetails.updateOne({
+                                    id: product_size_detail.id
+                                }).set({
+                                    size_id: product_size_detail.size_id,
+                                    quantity: product_size_detail.quantity,
+                                });
+                            }
                         }
                     }
                 }
@@ -342,24 +372,14 @@ const slug = require('slug');
         }
     },
     create: async (req, res) => {
-        const { name, sku, desciption, is_new, is_disable, categories, product_details } = req.body;
+        const { name, desciption, is_new, is_disable, categories, product_details, images } = req.body;
         try {
-            const productExist = await Products.find({ sku }).limit(1);
-
-            if (productExist && productExist.id) {
-                return res.status(400).json({
-                    success: 0,
-                    data: null,
-                    message: 'Đã tồn tại sản phẩm với mã SKU này!'
-                });
-            }
-
             const lastProduct = await Products.find({}).sort('id DESC').limit(1);
 
             const productCreated = await Products.create({
                 name,
                 slug: slug(name),
-                sku: sku || `SP${lastProduct[0] && lastProduct[0].id ? lastProduct[0].id + 1 : 1}`,
+                sku: `MSP${lastProduct[0] && lastProduct[0].id ? lastProduct[0].id + 1 : 1}`,
                 desciption,
                 is_new,
                 is_disable,
@@ -377,22 +397,32 @@ const slug = require('slug');
             for (let i = 0; i < product_details.length; i++) {
                 const product_detail = product_details[i];
                 
-                const colorCreated = await Colors.create({
-                    color_name: product_detail.color_name,
-                    color_code: product_detail.color_code,
-                }).fetch();
-                
-                const sizeCreated = await Sizes.create({
-                    size: product_detail.size,
-                    size_code: product_detail.size_code,
-                }).fetch();
-                
-                const productDetail = await ProductDetails.create({
+                const productDetailCreated = await ProductDetails.create({
                     product_id: productCreated.id,
-                    color_id: colorCreated.id,
-                    size_id: sizeCreated.id,
+                    color_id: product_detail.color_id,
                     price: product_detail.price,
-                    quantity: product_detail.quantity,
+                }).fetch();
+
+                if (product_detail.sizes && product_detail.sizes.length > 0) {
+                    for (let j = 0; j < product_detail.sizes.length; j++) {
+                        const size_detail = product_detail.sizes[j];
+                
+                        const productSizeDetailCreated = await ProductSizeDetails.create({
+                            product_detail_id: productDetailCreated.id,
+                            size_id: size_detail.size_id,
+                            quantity: size_detail.quantity,
+                        }).fetch();
+                    }
+                }
+            }
+
+            for (let i = 0; i < images.length; i++) {
+                const imageUrl = images[i];
+                
+                const productDetailImageCreated = await ProductDetailImages.create({
+                    product_id: productCreated.id,
+                    image_path: imageUrl,
+                    thumb_path: imageUrl,
                 }).fetch();
             }
 

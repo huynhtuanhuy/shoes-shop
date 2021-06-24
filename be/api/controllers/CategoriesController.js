@@ -28,7 +28,7 @@ const slug = require("slug");
     find: async (req, res) => {
         const { page = 1, perPage = 10, sorted = [], filtered = [] } = req.query;
         try {
-            const filter = {};
+            const filter = { parent_id: { '!': null } };
 
             if (filtered && filtered.length > 0) {
                 for (let i = 0; i < filtered.length; i++) {
@@ -115,9 +115,9 @@ const slug = require("slug");
                 });
             }
 
-            const productCategories = await ProductCategories.find({ category_id: categoryFound.id });
-            console.log(productCategories);
-            if (productCategories.length > 0) {
+            const productCategoriesCount = await ProductCategories.count({ category_id: categoryFound.id });
+            
+            if (productCategoriesCount > 0) {
                 return res.status(400).json({
                     success: 0,
                     data: null,
@@ -125,7 +125,7 @@ const slug = require("slug");
                 });
             }
 
-            // await Categories.destroyOne({ id });
+            await Categories.destroyOne({ id });
 
             return res.json({
                 success: 1,
@@ -146,6 +146,16 @@ const slug = require("slug");
         const { name, parent_id } = req.body;
 
         try {
+            const categoryExistFound = await Categories.findOne({ slug: slug(name), parent_id });
+
+            if (categoryExistFound && categoryExistFound.id && categoryExistFound.id != id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Tên danh mục này đã tồn tại!'
+                });
+            }
+
             const query = {
                 id,
             };
@@ -187,6 +197,16 @@ const slug = require("slug");
         const { name, parent_id } = req.body;
 
         try {
+            const categoryFound = await Categories.findOne({ slug: slug(name), parent_id });
+
+            if (categoryFound && categoryFound.id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Tên danh mục này đã tồn tại!'
+                });
+            }
+
             const categoryCreated = await Categories.create({
                 name,
                 slug: slug(name),

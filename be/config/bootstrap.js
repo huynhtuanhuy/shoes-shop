@@ -23,6 +23,23 @@ module.exports.bootstrap = async function() {
     ]);
   }
   
+  if (await Categories.count() == 0) {
+    await Categories.createEach([
+      {
+        id: 1,
+        name: "Nam",
+        slug: "nam",
+        parent_id: null
+      },
+      {
+        id: 2,
+        name: "Nữ",
+        slug: "nu",
+        parent_id: null
+      },
+    ]);
+  }
+  
   // if (await Orders.count() == 0) {
   //   const order = await Orders.create(
   //     {
@@ -38,13 +55,15 @@ module.exports.bootstrap = async function() {
   //     {
   //       order_id: order.id,
   //       product_detail_id: 1,
+  //       product_size_detail_id: 1,
   //       quantity: 10,
   //       price: 100000,
   //       sale_price: 10000,
   //     },
   //     {
   //       order_id: order.id,
-  //       product_detail_id: 2,
+  //       product_detail_id: 1,
+  //       product_size_detail_id: 2,
   //       quantity: 20,
   //       price: 150000,
   //       sale_price: 15000,

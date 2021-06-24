@@ -1,13 +1,30 @@
 /**
- * ProductsController.js
+ * SizesController.js
  *
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-
-const slug = require('slug');
+const slug = require("slug");
 
  module.exports = {
+    options: async (req, res) => {
+        try {
+            const sizeData = await Sizes.find({});
+
+            res.json({
+                success: 1,
+                data: sizeData,
+                message: '',
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: 0,
+                data: null,
+                message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
+            });
+        }
+    },
     find: async (req, res) => {
         const { page = 1, perPage = 10, sorted = [], filtered = [] } = req.query;
         try {
@@ -17,33 +34,21 @@ const slug = require('slug');
                 for (let i = 0; i < filtered.length; i++) {
                     const filterItem = JSON.parse(filtered[i]);
                     if (filterItem.id && filterItem.value) {
-                        filter[filterItem.id] = filterItem.id == "product_id" ? filterItem.value : { contains: filterItem.value };
+                        filter[filterItem.id] = { contains: filterItem.value };
                     }
                 }
             }
 
-            const total = await ProductDetailSales.count(filter);
-            const productDetailSaleData = await ProductDetailSales.find(filter)
+            const total = await Sizes.count(filter);
+            const sizeData = await Sizes.find(filter)
                 .limit(Number(perPage))
-                .skip((Number(page) - 1) * Number(perPage))
-                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : [])
-                .populate('product_id');
-
-            const product_details = await ProductDetails.find({
-                id: {
-                    in: productDetailSaleData.map(item => item.product_detail_id)
-                }
-            }).populate('color_id').populate('sizes');
+                .skip((Number(page)-1)*Number(perPage))
+                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : []);
 
             res.json({
                 success: 1,
                 data: {
-                    data: productDetailSaleData.map(productDetailSale => {
-                        return {
-                            ...productDetailSale,
-                            product_detail_id: product_details.filter(item => item.id == productDetailSale.product_detail_id)[0],
-                        }
-                    }),
+                    data: sizeData,
                     page: Number(page),
                     total: total,
                     perPage: Number(perPage),
@@ -67,19 +72,19 @@ const slug = require('slug');
                 id,
             };
 
-            const productDetailSaleFound = await ProductDetailSales.findOne(query).populate('product_detail_id').populate('product_id');
+            const sizeFound = await Sizes.findOne(query);
 
-            if (!productDetailSaleFound || !productDetailSaleFound.id) {
+            if (!sizeFound || !sizeFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Chương trình khuyến mãi không tồn tại!'
+                    message: 'Size sản phẩm không tồn tại!'
                 });
             }
 
             return res.json({
                 success: 1,
-                data: productDetailSaleFound,
+                data: sizeFound,
                 message: '',
             });
         } catch (error) {
@@ -99,17 +104,27 @@ const slug = require('slug');
                 id,
             };
 
-            const productDetailSaleFound = await ProductDetailSales.findOne(query);
+            const sizeFound = await Sizes.findOne(query);
 
-            if (!productDetailSaleFound || !productDetailSaleFound.id) {
+            if (!sizeFound || !sizeFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Chương trình khuyến mãi không tồn tại!'
+                    message: 'Size sản phẩm không tồn tại!'
                 });
             }
 
-            await ProductDetailSales.destroyOne({ id });
+            const productDetailsCount = await ProductDetails.count({ size_id: sizeFound.id });
+            
+            if (productDetailsCount > 0) {
+                return res.status(400).json({
+                    success: 0,
+                    data: null,
+                    message: 'Không xóa được màu vì đã có sản phẩm!'
+                });
+            }
+
+            await Sizes.destroyOne({ id });
 
             return res.json({
                 success: 1,
@@ -127,37 +142,49 @@ const slug = require('slug');
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { product_id, product_detail_id, sale_price, start_date, end_date } = req.body;
+        const { size, size_code } = req.body;
 
         try {
+            const sizeExistFound = await Sizes.findOne({
+                or: [
+                    { size },
+                    { size_code }
+                ]
+            });
+
+            if (sizeExistFound && sizeExistFound.id && sizeExistFound.id != id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Size hoặc mã size này đã tồn tại!'
+                });
+            }
+
             const query = {
                 id,
             };
 
-            const productDetailSaleFound = await ProductDetailSales.findOne(query);
+            const sizeFound = await Sizes.findOne(query);
 
-            if (!productDetailSaleFound || !productDetailSaleFound.id) {
+            if (!sizeFound || !sizeFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Chương trình khuyến mãi không tồn tại!'
+                    message: 'Size sản phẩm không tồn tại!'
                 });
             }
 
-            await ProductDetailSales.updateOne({ id })
+            await Sizes.updateOne({ id })
                 .set({
-                    product_id: product_id || productDetailSaleFound.product_id,
-                    product_detail_id: product_detail_id || productDetailSaleFound.product_detail_id,
-                    sale_price: sale_price || productDetailSaleFound.sale_price,
-                    start_date: start_date || productDetailSaleFound.start_date,
-                    end_date: end_date || productDetailSaleFound.end_date,
+                    size: size || sizeFound.size,
+                    size_code: size_code || sizeFound.size_code,
                 });
 
-            const productDetailSaleUpdated = await ProductDetailSales.findOne(query);
+            const sizeUpdated = await Sizes.findOne(query);
 
             return res.json({
                 success: 1,
-                data: productDetailSaleUpdated,
+                data: sizeUpdated,
                 message: '',
             });
         } catch (error) {
@@ -170,19 +197,32 @@ const slug = require('slug');
         }
     },
     create: async (req, res) => {
-        const { product_id, product_detail_id, sale_price, start_date, end_date } = req.body;
+        const { size, size_code } = req.body;
+
         try {
-            const productDetailSaleCreated = await ProductDetailSales.create({
-                product_id,
-                product_detail_id,
-                sale_price,
-                start_date,
-                end_date,
+            const sizeExistFound = await Sizes.findOne({
+                or: [
+                    { size },
+                    { size_code }
+                ]
+            });
+
+            if (sizeExistFound && sizeExistFound.id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Size hoặc mã size này đã tồn tại!'
+                });
+            }
+
+            const sizeCreated = await Sizes.create({
+                size,
+                size_code,
             }).fetch();
 
             return res.json({
                 success: 1,
-                data: productDetailSaleCreated,
+                data: sizeCreated,
                 message: '',
             });
         } catch (error) {

@@ -1,13 +1,30 @@
 /**
- * ProductsController.js
+ * ColorsController.js
  *
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-
-const slug = require('slug');
+const slug = require("slug");
 
  module.exports = {
+    options: async (req, res) => {
+        try {
+            const colorData = await Colors.find({});
+
+            res.json({
+                success: 1,
+                data: colorData,
+                message: '',
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: 0,
+                data: null,
+                message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
+            });
+        }
+    },
     find: async (req, res) => {
         const { page = 1, perPage = 10, sorted = [], filtered = [] } = req.query;
         try {
@@ -17,33 +34,21 @@ const slug = require('slug');
                 for (let i = 0; i < filtered.length; i++) {
                     const filterItem = JSON.parse(filtered[i]);
                     if (filterItem.id && filterItem.value) {
-                        filter[filterItem.id] = filterItem.id == "product_id" ? filterItem.value : { contains: filterItem.value };
+                        filter[filterItem.id] = { contains: filterItem.value };
                     }
                 }
             }
 
-            const total = await ProductDetailSales.count(filter);
-            const productDetailSaleData = await ProductDetailSales.find(filter)
+            const total = await Colors.count(filter);
+            const colorData = await Colors.find(filter)
                 .limit(Number(perPage))
-                .skip((Number(page) - 1) * Number(perPage))
-                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : [])
-                .populate('product_id');
-
-            const product_details = await ProductDetails.find({
-                id: {
-                    in: productDetailSaleData.map(item => item.product_detail_id)
-                }
-            }).populate('color_id').populate('sizes');
+                .skip((Number(page)-1)*Number(perPage))
+                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : []);
 
             res.json({
                 success: 1,
                 data: {
-                    data: productDetailSaleData.map(productDetailSale => {
-                        return {
-                            ...productDetailSale,
-                            product_detail_id: product_details.filter(item => item.id == productDetailSale.product_detail_id)[0],
-                        }
-                    }),
+                    data: colorData,
                     page: Number(page),
                     total: total,
                     perPage: Number(perPage),
@@ -67,19 +72,19 @@ const slug = require('slug');
                 id,
             };
 
-            const productDetailSaleFound = await ProductDetailSales.findOne(query).populate('product_detail_id').populate('product_id');
+            const colorFound = await Colors.findOne(query);
 
-            if (!productDetailSaleFound || !productDetailSaleFound.id) {
+            if (!colorFound || !colorFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Chương trình khuyến mãi không tồn tại!'
+                    message: 'Màu sản phẩm không tồn tại!'
                 });
             }
 
             return res.json({
                 success: 1,
-                data: productDetailSaleFound,
+                data: colorFound,
                 message: '',
             });
         } catch (error) {
@@ -99,17 +104,27 @@ const slug = require('slug');
                 id,
             };
 
-            const productDetailSaleFound = await ProductDetailSales.findOne(query);
+            const colorFound = await Colors.findOne(query);
 
-            if (!productDetailSaleFound || !productDetailSaleFound.id) {
+            if (!colorFound || !colorFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Chương trình khuyến mãi không tồn tại!'
+                    message: 'Màu sản phẩm không tồn tại!'
                 });
             }
 
-            await ProductDetailSales.destroyOne({ id });
+            const productDetailsCount = await ProductDetails.count({ color_id: colorFound.id });
+            
+            if (productDetailsCount > 0) {
+                return res.status(400).json({
+                    success: 0,
+                    data: null,
+                    message: 'Không xóa được màu vì đã có sản phẩm!'
+                });
+            }
+
+            await Colors.destroyOne({ id });
 
             return res.json({
                 success: 1,
@@ -127,37 +142,49 @@ const slug = require('slug');
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { product_id, product_detail_id, sale_price, start_date, end_date } = req.body;
+        const { color_name, color_code } = req.body;
 
         try {
+            const colorExistFound = await Colors.findOne({
+                or: [
+                    { color_name },
+                    { color_code }
+                ]
+            });
+
+            if (colorExistFound && colorExistFound.id && colorExistFound.id != id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Tên màu hoặc mã màu này đã tồn tại!'
+                });
+            }
+
             const query = {
                 id,
             };
 
-            const productDetailSaleFound = await ProductDetailSales.findOne(query);
+            const colorFound = await Colors.findOne(query);
 
-            if (!productDetailSaleFound || !productDetailSaleFound.id) {
+            if (!colorFound || !colorFound.id) {
                 return res.status(404).json({
                     success: 0,
                     data: null,
-                    message: 'Chương trình khuyến mãi không tồn tại!'
+                    message: 'Màu sản phẩm không tồn tại!'
                 });
             }
 
-            await ProductDetailSales.updateOne({ id })
+            await Colors.updateOne({ id })
                 .set({
-                    product_id: product_id || productDetailSaleFound.product_id,
-                    product_detail_id: product_detail_id || productDetailSaleFound.product_detail_id,
-                    sale_price: sale_price || productDetailSaleFound.sale_price,
-                    start_date: start_date || productDetailSaleFound.start_date,
-                    end_date: end_date || productDetailSaleFound.end_date,
+                    color_name: color_name || colorFound.color_name,
+                    color_code: color_code || colorFound.color_code,
                 });
 
-            const productDetailSaleUpdated = await ProductDetailSales.findOne(query);
+            const colorUpdated = await Colors.findOne(query);
 
             return res.json({
                 success: 1,
-                data: productDetailSaleUpdated,
+                data: colorUpdated,
                 message: '',
             });
         } catch (error) {
@@ -170,19 +197,32 @@ const slug = require('slug');
         }
     },
     create: async (req, res) => {
-        const { product_id, product_detail_id, sale_price, start_date, end_date } = req.body;
+        const { color_name, color_code } = req.body;
+
         try {
-            const productDetailSaleCreated = await ProductDetailSales.create({
-                product_id,
-                product_detail_id,
-                sale_price,
-                start_date,
-                end_date,
+            const colorExistFound = await Colors.findOne({
+                or: [
+                    { color_name },
+                    { color_code }
+                ]
+            });
+
+            if (colorExistFound && colorExistFound.id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Tên màu hoặc mã màu này đã tồn tại!'
+                });
+            }
+
+            const colorCreated = await Colors.create({
+                color_name,
+                color_code,
             }).fetch();
 
             return res.json({
                 success: 1,
-                data: productDetailSaleCreated,
+                data: colorCreated,
                 message: '',
             });
         } catch (error) {
