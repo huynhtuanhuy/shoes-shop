@@ -31,11 +31,17 @@ const Brands = React.lazy(() => import('./components/icons/brands/Brands'));
 const Alerts = React.lazy(() => import('./components/notifications/alerts/Alerts'));
 const Badges = React.lazy(() => import('./components/notifications/badges/Badges'));
 const Modals = React.lazy(() => import('./components/notifications/modals/Modals'));
-const Colors = React.lazy(() => import('./components/theme/colors/Colors'));
+const ThemeColors = React.lazy(() => import('./components/theme/colors/Colors'));
 const Typography = React.lazy(() => import('./components/theme/typography/Typography'));
 const Widgets = React.lazy(() => import('./components/widgets/Widgets'));
 const User = React.lazy(() => import('./components/users/User'));
 
+const EditColors = React.lazy(() => import('./pages/colors/EditColors'));
+const NewColors = React.lazy(() => import('./pages/colors/NewColors'));
+const Colors = React.lazy(() => import('./pages/colors/Colors'));
+const EditSizes = React.lazy(() => import('./pages/sizes/EditSizes'));
+const NewSizes = React.lazy(() => import('./pages/sizes/NewSizes'));
+const Sizes = React.lazy(() => import('./pages/sizes/Sizes'));
 const EditUsers = React.lazy(() => import('./pages/users/EditUsers'));
 const NewUsers = React.lazy(() => import('./pages/users/NewUsers'));
 const Users = React.lazy(() => import('./pages/users/Users'));
@@ -51,10 +57,12 @@ const EditProductCategories = React.lazy(() => import('./pages/product-categorie
 const EditOrders = React.lazy(() => import('./pages/orders/EditOrders'));
 const Orders = React.lazy(() => import('./pages/orders/Orders'));
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
+const Statistics = React.lazy(() => import('./pages/statistics/Statistics'));
 
 const routes = [
   { path: '/', exact: true, name: 'Trang chủ' },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/statistics', name: 'Thống kê', component: Statistics },
   
   { path: '/products/:id/edit', exact: true,  name: 'Chỉnh sửa', component: EditProducts },
   { path: '/products/new', exact: true,  name: 'Tạo mới', component: NewProducts },
@@ -68,6 +76,14 @@ const routes = [
   { path: '/product-categories/new', exact: true,  name: 'Tạo mới', component: NewProductCategories },
   { path: '/product-categories', exact: true,  name: 'Danh mục sản phẩm', component: ProductCategories },
 
+  { path: '/colors/:id/edit', exact: true,  name: 'Chỉnh sửa', component: EditColors },
+  { path: '/colors/new', exact: true,  name: 'Tạo mới', component: NewColors },
+  { path: '/colors', exact: true,  name: 'Quản lý màu sắc', component: Colors },
+
+  { path: '/sizes/:id/edit', exact: true,  name: 'Chỉnh sửa', component: EditSizes },
+  { path: '/sizes/new', exact: true,  name: 'Tạo mới', component: NewSizes },
+  { path: '/sizes', exact: true,  name: 'Quản lý kích cỡ', component: Sizes },
+
   { path: '/orders/:id/edit', exact: true,  name: 'Chỉnh sửa', component: EditOrders },
   { path: '/orders', exact: true,  name: 'Quản lý đơn hàng', component: Orders },
   
@@ -76,7 +92,7 @@ const routes = [
   { path: '/users', exact: true,  name: 'Quản lý khách hàng', component: Users },
 
   { path: '/theme', name: 'Theme', component: Colors, exact: true },
-  { path: '/theme/colors', name: 'Colors', component: Colors },
+  { path: '/theme/colors', name: 'Colors', component: ThemeColors },
   { path: '/theme/typography', name: 'Typography', component: Typography },
   { path: '/base', name: 'Base', component: Cards, exact: true },
   { path: '/base/breadcrumbs', name: 'Breadcrumbs', component: Breadcrumbs },

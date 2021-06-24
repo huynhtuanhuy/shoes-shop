@@ -97,7 +97,7 @@ class EditProductCategories extends Component {
                                 </CFormGroup>
                                 <CFormGroup>
                                     <CLabel htmlFor="parent_id">Danh mục cha:</CLabel>
-                                    <CSelect custom value={parent_id} onChange={this.handleSelectChange} name="parent_id" id="parent_id">
+                                    <CSelect custom value={parent_id} onChange={this.handleSelectChange} required name="parent_id" id="parent_id">
                                         <option value="">Chọn danh mục cha</option>
                                         {parentOptions.map(parentOption => <option key={parentOption.id} value={parentOption.id}>{parentOption.name}</option>)}
                                     </CSelect>

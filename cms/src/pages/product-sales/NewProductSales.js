@@ -15,7 +15,9 @@ import {
     CSelect,
     CRow,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
+import CIcon from '@coreui/icons-react';
+import DatePicker from 'react-date-picker';
+import moment from 'moment'
 
 import * as actions from '../../actions';
 import * as networks from '../../networks';
@@ -26,8 +28,8 @@ class NewProductSales extends Component {
             product_id: '',
             product_detail_id: '',
             sale_price: 0,
-            start_date: new Date(),
-            end_date: new Date(),
+            start_date: new Date(moment().startOf('date').valueOf()),
+            end_date: new Date(moment().startOf('date').valueOf()),
         },
         productOptions: [],
     }
@@ -101,7 +103,7 @@ class NewProductSales extends Component {
                                     <CLabel htmlFor="product_detail_id">Thông số sản phẩm:</CLabel>
                                     <CSelect required custom value={product_detail_id} onChange={this.handleSelectChange} name="product_detail_id" id="product_detail_id">
                                         <option value="">Chọn thông số</option>
-                                        {currentProduct && currentProduct.product_details && currentProduct.product_details.map(product_detail => <option key={product_detail.id} value={product_detail.id}>Màu: {product_detail.color_id && product_detail.color_id.color_name} - Size: {product_detail.size_id && product_detail.size_id.size} - Giá: {product_detail.price}</option>)}
+                                        {currentProduct && currentProduct.product_details && currentProduct.product_details.map(product_detail => <option key={product_detail.id} value={product_detail.id}>Màu: {product_detail.color_id && product_detail.color_id.color_name} - Giá gốc: {product_detail.price}</option>)}
                                     </CSelect>
                                 </CFormGroup>
                                 <CFormGroup>
@@ -110,11 +112,11 @@ class NewProductSales extends Component {
                                 </CFormGroup>
                                 <CFormGroup>
                                     <CLabel htmlFor="start_date">Ngày bắt đầu</CLabel>
-                                    <CInput type="date" value={start_date} onChange={this.handleChange} required id="start_date" name="start_date" />
+                                    <DatePicker className="form-control p-0" format="dd/MM/yyyy" locale="vi-VN" required name="start_date" value={start_date} onChange={(date) => this.handleChange({ target: { name: 'start_date', value: date } })} clearIcon={null} />
                                 </CFormGroup>
                                 <CFormGroup>
-                                    <CLabel htmlFor="end_date">Giá kết thúc</CLabel>
-                                    <CInput type="date" value={end_date} onChange={this.handleChange} required id="end_date" name="end_date" />
+                                    <CLabel htmlFor="end_date">Ngày kết thúc</CLabel>
+                                    <DatePicker className="form-control p-0" format="dd/MM/yyyy" locale="vi-VN" required name="end_date" value={end_date} onChange={(date) => this.handleChange({ target: { name: 'end_date', value: date } })} clearIcon={null} />
                                 </CFormGroup>
                             </CForm>
                         </CCardBody>

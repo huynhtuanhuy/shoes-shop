@@ -134,6 +134,7 @@ import {
   cilClipboard,
   cilBarcode,
   cilPlus,
+  cilChartLine,
 } from '@coreui/icons'
 
 export const icons = Object.assign({}, {
@@ -141,6 +142,7 @@ export const icons = Object.assign({}, {
   logo,
   logoNegative
 }, {
+  cilChartLine,
   cilPlus,
   cilGift,
   cilBarcode,

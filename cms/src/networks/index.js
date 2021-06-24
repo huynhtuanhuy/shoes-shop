@@ -51,3 +51,7 @@ export * from './products';
 export * from './dashboards';
 export * from './productDetailSales';
 export * from './orders';
+export * from './colors';
+export * from './sizes';
+export * from './fileUpload';
+export * from './statistics';

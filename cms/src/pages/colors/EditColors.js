@@ -20,20 +20,20 @@ import CIcon from '@coreui/icons-react'
 import * as actions from '../../actions';
 import * as networks from '../../networks';
 
-class NewProductCategories extends Component {
+class EditColors extends Component {
     state = {
         formData: {
-            name: '',
-            parent_id: null,
+            color_name: '',
+            color_code: '#000000',
         },
-        parentOptions: [],
     }
 
     async componentDidMount() {
         try {
-            const parentOptions = await networks.getProductCategoryOptions();
-            if (parentOptions.data && parentOptions.data.data) {
-                this.setState({ parentOptions: parentOptions.data.data.filter(category => category.parent_id == null) });
+            const colorId = this.props.match.params.id;
+            const color = await networks.getSingleColor(colorId);
+            if (color.data && color.data.data) {
+                this.setState({ formData: color.data.data });
             }
         } catch (error) {
             
@@ -64,43 +64,39 @@ class NewProductCategories extends Component {
 
     handleSubmit = (e) => {
         e.preventDefault();
-        const { name, parent_id } = this.state.formData;
-
-        this.props.createProductCategory({ name, parent_id }, () => {
-            this.props.history.push('/product-categories');
+        const { id, color_name, color_code } = this.state.formData;
+        
+        this.props.updateColor({ id, color_name, color_code }, () => {
+            this.props.history.push('/colors');
         });
     }
 
     render() {
         const { loading } = this.props;
-        const { parentOptions } = this.state;
-        const { name, parent_id } = this.state.formData;
+        const { color_name, color_code } = this.state.formData;
 
         return (
             <CRow>
                 <CCol xs="12">
                     <CCard>
                         <CCardHeader>
-                            Tạo danh mục sản phẩm mới
+                            Chỉnh sửa màu sản phẩm
                         </CCardHeader>
                         <CCardBody>
                             <CForm onSubmit={this.handleSubmit} id="new-form" className="form-horizontal">
                                 <CFormGroup>
-                                    <CLabel htmlFor="name">Tên danh mục</CLabel>
-                                    <CInput value={name} onChange={this.handleChange} required id="name" name="name" placeholder="Nhập tên danh mục" />
+                                    <CLabel htmlFor="color_name">Tên màu</CLabel>
+                                    <CInput value={color_name} onChange={this.handleChange} required id="color_name" name="color_name" placeholder="Nhập tên màu" />
                                 </CFormGroup>
                                 <CFormGroup>
-                                    <CLabel htmlFor="parent_id">Danh mục cha:</CLabel>
-                                    <CSelect custom value={parent_id} onChange={this.handleSelectChange} required name="parent_id" id="parent_id">
-                                        <option value="">Chọn danh mục cha</option>
-                                        {parentOptions.map(parentOption => <option key={parentOption.id} value={parentOption.id}>{parentOption.name}</option>)}
-                                    </CSelect>
+                                    <CLabel htmlFor="color_code">Mã màu</CLabel>
+                                    <CInput type="color" value={color_code} onChange={this.handleChange} required id="color_code" name="color_code" placeholder="Nhập mã màu" />
                                 </CFormGroup>
                             </CForm>
                         </CCardBody>
                         <CCardFooter className="text-right">
-                            <CButton disabled={loading} form="new-form" type="submit" size="sm" color="primary" className="mr-3"><CIcon name="cil-plus" /> Tạo</CButton>
-                            <Link to="/product-categories">
+                            <CButton disabled={loading} form="new-form" type="submit" size="sm" color="primary" className="mr-3"><CIcon name="cil-save" /> Lưu</CButton>
+                            <Link to="/Colors">
                                 <CButton disabled={loading} type="reset" size="sm" color="danger"><CIcon name="cil-ban" /> Hủy bỏ</CButton>
                             </Link>
                         </CCardFooter>
@@ -116,7 +112,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-    createProductCategory: (productCategory, cb) => dispatch(actions.createProductCategory(productCategory, cb)),
+    updateColor: (color, cb) => dispatch(actions.updateColor(color, cb)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewProductCategories);
+export default connect(mapStateToProps, mapDispatchToProps)(EditColors);

@@ -16,6 +16,8 @@ import {
   CButton,
 } from '@coreui/react'
 import ReactTable from 'react-table-v6'
+import moment from 'moment'
+import DatePicker from 'react-date-picker';
 
 import * as actions from '../../actions';
 import * as networks from '../../networks';
@@ -45,26 +47,49 @@ class ProductSales extends Component {
         sortable: false,
         filterable: false,
         Cell: (row) => (<span>
-          Màu: {row.value.color_id && row.value.color_id.color_name} - Size: {row.value.size_id && row.value.size_id.size} - Giá: {row.value.price}
+          Màu: {row.value.color_id && row.value.color_id.color_name}
+        </span>)
+      },
+      {
+        Header: 'Giá gốc',
+        accessor: 'product_detail_id.price',
+        sortable: false,
+        filterable: false,
+        Cell: (row) => (<span>
+          {Number(row.value).toLocaleString()} VNĐ
         </span>)
       },
       {
         Header: 'Giá khuyến mãi',
         accessor: 'sale_price',
-        sortable: true,
-        filterable: true,
+        sortable: false,
+        filterable: false,
+        Cell: (row) => (<span>
+          {Number(row.value).toLocaleString()} VNĐ
+        </span>)
       },
       {
         Header: 'Ngày bắt đầu',
         accessor: 'start_date',
         sortable: true,
         filterable: false,
+        Cell: (row) => (<span>
+          {moment(row.value).format('DD/MM/YYYY')}
+        </span>),
+        Filter: ({ filter, onChange }) => (
+          <div>
+            <DatePicker format="dd/MM/yyyy" locale="vi-VN" name="start_date" value={filter ? filter.value : null} onChange={(date) => this.handleChange(date)} clearIcon={null} />
+          </div>
+        )
       },
       {
         Header: 'Ngày kết thúc',
         accessor: 'end_date',
         sortable: true,
         filterable: false,
+        Cell: (row) => (<span>
+          {moment(row.value).format('DD/MM/YYYY')}
+        </span>)
       },
       {
         Header: 'Hành động',

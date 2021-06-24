@@ -23,6 +23,14 @@ import {
     DELETE_PRODUCT_DETAIL_SALE,
     GET_ORDERS,
     UPDATE_ORDER,
+    GET_COLORS,
+    CREATE_COLOR,
+    UPDATE_COLOR,
+    DELETE_COLOR,
+    GET_SIZES,
+    CREATE_SIZE,
+    UPDATE_SIZE,
+    DELETE_SIZE,
 } from '../../actions/actionTypes';
 
 import {
@@ -53,6 +61,20 @@ import {
     updateProductSaga,
     deleteProductSaga,
 } from './products';
+
+import {
+    getSizesSaga,
+    createSizeSaga,
+    updateSizeSaga,
+    deleteSizeSaga,
+} from './sizes';
+
+import {
+    getColorsSaga,
+    createColorSaga,
+    updateColorSaga,
+    deleteColorSaga,
+} from './colors';
 
 import {
     getProductDetailSalesSaga,
@@ -93,6 +115,20 @@ export function* watchProducts() {
     yield takeEvery(CREATE_PRODUCT, createProductSaga);
     yield takeEvery(UPDATE_PRODUCT, updateProductSaga);
     yield takeEvery(DELETE_PRODUCT, deleteProductSaga);
+}
+
+export function* watchColors() {
+    yield takeEvery(GET_COLORS, getColorsSaga);
+    yield takeEvery(CREATE_COLOR, createColorSaga);
+    yield takeEvery(UPDATE_COLOR, updateColorSaga);
+    yield takeEvery(DELETE_COLOR, deleteColorSaga);
+}
+
+export function* watchSizes() {
+    yield takeEvery(GET_SIZES, getSizesSaga);
+    yield takeEvery(CREATE_SIZE, createSizeSaga);
+    yield takeEvery(UPDATE_SIZE, updateSizeSaga);
+    yield takeEvery(DELETE_SIZE, deleteSizeSaga);
 }
 
 export function* watchProductDetailSales() {

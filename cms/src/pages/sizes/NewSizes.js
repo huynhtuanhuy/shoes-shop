@@ -20,24 +20,12 @@ import CIcon from '@coreui/icons-react'
 import * as actions from '../../actions';
 import * as networks from '../../networks';
 
-class NewProductCategories extends Component {
+class NewSizes extends Component {
     state = {
         formData: {
-            name: '',
-            parent_id: null,
+            size: '',
+            size_code: '',
         },
-        parentOptions: [],
-    }
-
-    async componentDidMount() {
-        try {
-            const parentOptions = await networks.getProductCategoryOptions();
-            if (parentOptions.data && parentOptions.data.data) {
-                this.setState({ parentOptions: parentOptions.data.data.filter(category => category.parent_id == null) });
-            }
-        } catch (error) {
-            
-        }
     }
 
     handleChange = (e) => {
@@ -64,43 +52,39 @@ class NewProductCategories extends Component {
 
     handleSubmit = (e) => {
         e.preventDefault();
-        const { name, parent_id } = this.state.formData;
+        const { size, size_code } = this.state.formData;
 
-        this.props.createProductCategory({ name, parent_id }, () => {
-            this.props.history.push('/product-categories');
+        this.props.createSize({ size, size_code }, () => {
+            this.props.history.push('/sizes');
         });
     }
 
     render() {
         const { loading } = this.props;
-        const { parentOptions } = this.state;
-        const { name, parent_id } = this.state.formData;
+        const { size, size_code } = this.state.formData;
 
         return (
             <CRow>
                 <CCol xs="12">
                     <CCard>
                         <CCardHeader>
-                            Tạo danh mục sản phẩm mới
+                            Tạo size sản phẩm mới
                         </CCardHeader>
                         <CCardBody>
                             <CForm onSubmit={this.handleSubmit} id="new-form" className="form-horizontal">
                                 <CFormGroup>
-                                    <CLabel htmlFor="name">Tên danh mục</CLabel>
-                                    <CInput value={name} onChange={this.handleChange} required id="name" name="name" placeholder="Nhập tên danh mục" />
+                                    <CLabel htmlFor="size">Size</CLabel>
+                                    <CInput type="string" value={size} onChange={this.handleChange} required id="size" name="size" placeholder="Nhập size" />
                                 </CFormGroup>
                                 <CFormGroup>
-                                    <CLabel htmlFor="parent_id">Danh mục cha:</CLabel>
-                                    <CSelect custom value={parent_id} onChange={this.handleSelectChange} required name="parent_id" id="parent_id">
-                                        <option value="">Chọn danh mục cha</option>
-                                        {parentOptions.map(parentOption => <option key={parentOption.id} value={parentOption.id}>{parentOption.name}</option>)}
-                                    </CSelect>
+                                    <CLabel htmlFor="size_code">Mã size</CLabel>
+                                    <CInput value={size_code} onChange={this.handleChange} required id="size_code" name="size_code" placeholder="Nhập mã size" />
                                 </CFormGroup>
                             </CForm>
                         </CCardBody>
                         <CCardFooter className="text-right">
                             <CButton disabled={loading} form="new-form" type="submit" size="sm" color="primary" className="mr-3"><CIcon name="cil-plus" /> Tạo</CButton>
-                            <Link to="/product-categories">
+                            <Link to="/sizes">
                                 <CButton disabled={loading} type="reset" size="sm" color="danger"><CIcon name="cil-ban" /> Hủy bỏ</CButton>
                             </Link>
                         </CCardFooter>
@@ -116,7 +100,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-    createProductCategory: (productCategory, cb) => dispatch(actions.createProductCategory(productCategory, cb)),
+    createSize: (size, cb) => dispatch(actions.createSize(size, cb)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewProductCategories);
+export default connect(mapStateToProps, mapDispatchToProps)(NewSizes);

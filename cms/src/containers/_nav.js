@@ -28,6 +28,18 @@ const _nav =  [
   },
   {
     _tag: 'CSidebarNavItem',
+    name: 'Quản lý màu sắc',
+    to: '/colors',
+    icon: <CIcon name="cil-tags" customClasses="c-sidebar-nav-icon"/>,
+  },
+  {
+    _tag: 'CSidebarNavItem',
+    name: 'Quản lý kích cỡ',
+    to: '/sizes',
+    icon: <CIcon name="cil-tags" customClasses="c-sidebar-nav-icon"/>,
+  },
+  {
+    _tag: 'CSidebarNavItem',
     name: 'Quản lý đơn hàng',
     to: '/orders',
     icon: <CIcon name="cil-clipboard" customClasses="c-sidebar-nav-icon"/>,
@@ -37,6 +49,12 @@ const _nav =  [
     name: 'Quản lý khách hàng',
     to: '/users',
     icon: <CIcon name="cil-user" customClasses="c-sidebar-nav-icon"/>,
+  },
+  {
+    _tag: 'CSidebarNavItem',
+    name: 'Thống kê',
+    to: '/statistics',
+    icon: <CIcon name="cil-chart-line" customClasses="c-sidebar-nav-icon"/>,
   },
   // {
   //   _tag: 'CSidebarNavTitle',

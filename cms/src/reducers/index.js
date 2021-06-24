@@ -7,6 +7,8 @@ import users from './users';
 import products from './products';
 import productDetailSales from './productDetailSales';
 import orders from './orders';
+import colors from './colors';
+import sizes from './sizes';
 
 const rootReducer = combineReducers({
     auth,
@@ -16,6 +18,8 @@ const rootReducer = combineReducers({
     products,
     productDetailSales,
     orders,
+    colors,
+    sizes,
 })
 
 export default rootReducer;
