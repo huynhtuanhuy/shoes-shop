@@ -1,7 +1,33 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { Link } from 'react-router-dom';
 
-export default class Navbar extends Component {
+class Navbar extends Component {
+    renderCategories = () => {
+        const { productCategories } = this.props;
+        console.log(productCategories)
+        return (productCategories || []).map(productCategory => {
+            return (
+                <li key={productCategory.id}>
+                    <Link to={`/category/${productCategory.slug}`}>{productCategory.name}</Link>
+                    {productCategory.children && productCategory.children.length > 0 ? (
+                        <div className="mega-menu">
+                            {productCategory.children.map(productCategoryChild => {
+                                return (
+                                    <Link key={productCategoryChild.id} to={`/category/${productCategory.slug}/${productCategoryChild.slug}`}>
+                                        {productCategoryChild.name}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    ) : null}
+                </li>
+            )
+        });
+    }
+
     render() {
+
         return (
             <header>
                 <div className="top-link">
@@ -101,87 +127,11 @@ export default class Navbar extends Component {
                                 <div className="mainmenu">
                                     <nav>
                                         <ul>
-                                            <li><a href="/">Home</a>
+                                            <li>
+                                                <Link to="/">Home</Link>
                                             </li>
-                                            <li className="mega-women"><a href="/shop">Women</a>
-                                                <div className="mega-menu women">
-                                                    <div className="part-1">
-                                                        <span>
-                                                            <a href="#">Dresses</a>
-                                                            <a href="#">Cocktail</a>
-                                                            <a href="#">Day</a>
-                                                            <a href="#">Evening</a>
-                                                            <a href="#">Sports</a>
-                                                        </span>
-                                                        <span>
-                                                            <a href="#">shoes</a>
-                                                            <a href="#">Sports</a>
-                                                            <a href="#">run</a>
-                                                            <a href="#">sandals</a>
-                                                            <a href="#">Books</a>
-                                                        </span>
-                                                        <span>
-                                                            <a href="#">Handbags</a>
-                                                            <a href="#">Blazers</a>
-                                                            <a href="#">table</a>
-                                                            <a href="#">coats</a>
-                                                            <a href="#">kids</a>
-                                                        </span>
-                                                        <span>
-                                                            <a href="#">Clothing</a>
-                                                            <a href="#">T-shirts</a>
-                                                            <a href="#">coats</a>
-                                                            <a href="#">Jackets</a>
-                                                            <a href="#">jeans</a>
-                                                        </span>
-                                                    </div>
-                                                    <div className="part-2">
-                                                        <a href="#">
-                                                            <img src="/img/banner/menu-banner.png" alt="" />
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li className="mega-men"><a href="/shop">Men</a>
-                                                <div className="mega-menu men">
-                                                    <span>
-                                                        <a href="#">Bags</a>
-                                                        <a href="#">Bootees  Bags</a>
-                                                        <a href="#">Blazers</a>
-                                                    </span>
-                                                    <span>
-                                                        <a href="#">Clothing</a>
-                                                        <a href="#">coats</a>
-                                                        <a href="#">T-shirts</a>
-                                                    </span>
-                                                    <span>
-                                                        <a href="#">Lingerie</a>
-                                                        <a href="#">Bands</a>
-                                                        <a href="#">Furniture</a>
-                                                    </span>
-                                                </div>
-                                            </li>
-                                            <li className="mega-footwear"><a href="/shop">Footwear</a>
-                                                <div className="mega-menu footwear">
-                                                    <span>
-                                                        <a href="#">Footwear Man</a>
-                                                        <a href="#">gifts</a>
-                                                    </span>
-                                                    <span>
-                                                        <a href="#">Footwear Womens</a>
-                                                        <a href="#">boots</a>
-                                                    </span>
-                                                </div>
-                                            </li>
-                                            <li className="mega-jewellery"><a href="/shop">Jewellery</a>
-                                                <div className="mega-menu jewellery">
-                                                    <span>
-                                                        <a href="#">Rings</a>
-                                                    </span>
-                                                </div>
-                                            </li>
-                                            <li><a href="/shop">accessories</a></li>
-                                            <li><a href="/contact">Contact</a></li>
+                                            {this.renderCategories()}
+                                            <li><Link to="/contact">Contact</Link></li>
                                             {/* <li><a href="#">Pages</a>
                                                 <div className="sub-menu pages">
                                                     <span>
@@ -342,3 +292,15 @@ export default class Navbar extends Component {
         )
     }
 }
+
+const mapStateToProps = (state) => {
+    return {
+        loading: state.common.loading,
+        productCategories: state.productCategories.productCategories,
+    }
+}
+
+const mapDispatchToProps = dispatch => ({
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar)

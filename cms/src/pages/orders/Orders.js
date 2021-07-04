@@ -96,7 +96,7 @@ class Orders extends Component {
         Header: 'Hành động',
         accessor: 'id',
         sortable: false,
-        Cell: (row) => !['accomplished', 'cancelled'].includes(row.original.status) && (<div>
+        Cell: (row) => !['shipping', 'accomplished', 'cancelled'].includes(row.original.status) && (<div>
           <Link to={`/orders/${row.value}/edit`}>
             <CButton color="info">Sửa</CButton>
           </Link>

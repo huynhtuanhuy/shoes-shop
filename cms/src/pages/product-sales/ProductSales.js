@@ -26,6 +26,16 @@ class ProductSales extends Component {
   state = {
     columns: [
       {
+        Header: 'Số thứ tự',
+        accessor: 'index',
+        filterable: false,
+        sortable: false,
+        Cell: (row) => {
+          console.log(row)
+          return (<span>{row.index + (row.page*row.pageSize) + 1}</span>);
+        }
+      },
+      {
         Header: 'Sản phẩm',
         accessor: 'product_id.name',
         id: 'product_id',

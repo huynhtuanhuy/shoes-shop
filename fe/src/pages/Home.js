@@ -98,7 +98,7 @@ export default class Home extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="banner-area">
+                    {/* <div className="banner-area">
                         <div className="single-banner">
                             <div className="part-1">
                                 <div className="box-1 box">
@@ -145,8 +145,8 @@ export default class Home extends Component {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="products-area">
+                    </div> */}
+                    {/* <div className="products-area">
                         <div className="container">
                             <div className="products">
                                 <div className="row">
@@ -2917,7 +2917,7 @@ export default class Home extends Component {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     <div className="features-product-area">
                         <div className="container">
                             <div className="row">
@@ -3274,7 +3274,7 @@ export default class Home extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="another-banner-area">
+                    {/* <div className="another-banner-area">
                         <div className="container">
                             <div className="row">
                                 <div className="col-md-12">
@@ -3286,7 +3286,7 @@ export default class Home extends Component {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     <div className="new-products-area">
                         <div className="container">
                             <div className="row">
@@ -3617,7 +3617,7 @@ export default class Home extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="blog-area">
+                    {/* <div className="blog-area">
                         <div className="container">
                             <div className="row">
                                 <div className="col-md-12">
@@ -3685,7 +3685,7 @@ export default class Home extends Component {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     <div className="newsleter-area">
                         <div className="container">
                             <div className="row">

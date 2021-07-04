@@ -20,6 +20,11 @@ module.exports = {
     parent_id: {
       model: 'Categories',
     },
+
+    children: {
+      collection: 'Categories',
+      via: 'parent_id',
+    },
   },
   schema: true,
   tableName: 'categories'

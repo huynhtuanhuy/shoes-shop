@@ -58,6 +58,10 @@ module.exports.routes = {
   'GET /api/statistics/income': 'StatisticController.totalIncome', 
   'GET /api/statistics/inventory': 'StatisticController.inventory', 
 
+  'GET /api/fe/categories/options': 'FrontendController.findCategoryOptions', 
+  'GET /api/fe/categories': 'FrontendController.findCategories', 
+  'GET /api/fe/categories/:id': 'FrontendController.findOneCategory', 
+
   'POST /api/upload': 'FileController.upload',
 
   '/images/*': (req, res) => {

@@ -114,9 +114,9 @@ const slug = require("slug");
                 });
             }
 
-            const productDetailsCount = await ProductDetails.count({ size_id: sizeFound.id });
+            const productSizeDetailsCount = await ProductSizeDetails.count({ size_id: sizeFound.id });
             
-            if (productDetailsCount > 0) {
+            if (productSizeDetailsCount > 0) {
                 return res.status(400).json({
                     success: 0,
                     data: null,

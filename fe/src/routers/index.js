@@ -5,7 +5,7 @@ import {
 } from "react-router-dom";
 
 import Home from '../pages/Home';
-import Shop from '../pages/Shop';
+import Category from '../pages/Category';
 import SingleProduct from '../pages/SingleProduct';
 import Cart from '../pages/Cart';
 import Checkout from '../pages/Checkout';
@@ -50,8 +50,11 @@ export default function Routers() {
       <Route path="/single-product">
         <SingleProduct />
       </Route>
-      <Route path="/shop">
-        <Shop />
+      <Route path="/category/:slug/:childSlug">
+        <Category />
+      </Route>
+      <Route path="/category/:slug">
+        <Category />
       </Route>
       <Route exact path="/">
         <Home />

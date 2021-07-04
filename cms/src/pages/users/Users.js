@@ -24,6 +24,16 @@ class Users extends Component {
   state = {
     columns: [
       {
+        Header: 'Số thứ tự',
+        accessor: 'index',
+        filterable: false,
+        sortable: false,
+        Cell: (row) => {
+          console.log(row)
+          return (<span>{row.index + (row.page*row.pageSize) + 1}</span>);
+        }
+      },
+      {
         Header: 'Tài khoản',
         accessor: 'username',
         filterable: true,

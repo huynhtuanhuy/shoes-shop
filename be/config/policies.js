@@ -19,6 +19,10 @@ module.exports.policies = {
 
   '*': 'tryAuth',
 
+  FrontendController: {
+    '*': true,
+  },
+
   AuthController: {
     '*': true,
   },
