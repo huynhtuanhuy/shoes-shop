@@ -46,10 +46,8 @@ export const axios = instance;
 
 export * from './auth';
 export * from './productCategories';
-export * from './users';
 export * from './products';
 export * from './dashboards';
-export * from './productDetailSales';
 export * from './orders';
 export * from './colors';
 export * from './sizes';

@@ -1,15 +1,151 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import { withRouter, Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-export default class Shop extends Component {
+import * as actions from '../actions';
+
+const baseUrl = process.env.REACT_APP_API_BASE_URL;
+
+class Category extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            filter: {
+                category: null,
+                color: null,
+                sizes: [],
+                priceRange: [0, 2000000],
+            },
+            sort: 'updated_at DESC',
+            page: 1,
+            currentCategorySlug: props.match.params.slug,
+        }
+
+        this.priceRangeDebounce = null;
+    }
+
+    componentDidMount() {
+        if (window.$) {
+            window.$("#slider-range").slider({
+                range: true,
+                min: 0,
+                max: 2000000,
+                values: [0, 2000000],
+                slide: (event, ui) => {
+                    this.setState({
+                        filter: {
+                            ...this.state.filter,
+                            priceRange: ui.values
+                        }
+                    }, () => {
+                        if (this.priceRangeDebounce != null) {
+                            clearTimeout(this.priceRangeDebounce);
+                        }
+    
+                        this.priceRangeDebounce = setTimeout(() => {
+                            this.loadData();
+                        }, 1000);
+                    });
+                }
+            });
+        }
+        this.props.getSizes();
+        this.props.getColors();
+        this.loadData();
+    }
+
+    loadData = () => {
+        this.props.getProducts({
+            page: this.state.page || 1,
+            sorted: this.state.sort || 'updated_at DESC',
+            filtered: this.state.filter || {}
+        });
+    }
+
+    handleSelectColor = (color) => {
+        const { filter } = this.state;
+
+        if (filter && filter.color && filter.color == color.id) {
+            this.setState({
+                filter: {
+                    ...filter,
+                    color: null,
+                }
+            }, () => this.loadData());
+        } else {
+            this.setState({
+                filter: {
+                    ...filter,
+                    color: color && color.id || null,
+                }
+            }, () => this.loadData());
+        }
+    }
+
+    handleSelectSize = (size) => {
+        const { filter } = this.state;
+
+        if (filter && filter.sizes && filter.sizes.includes(size.id)) {
+            this.setState({
+                filter: {
+                    ...filter,
+                    sizes: filter.sizes.filter(item => item != size.id),
+                }
+            }, () => this.loadData());
+        } else if (size && size.id) {
+            this.setState({
+                filter: {
+                    ...filter,
+                    sizes: [
+                        ...filter.sizes,
+                        size.id
+                    ]
+                }
+            }, () => this.loadData());
+        }
+    }
+
+    handleSelectCategory = (category) => {
+        const { filter } = this.state;
+
+        if (filter && filter.sizes && filter.category == category.id) {
+            this.setState({
+                filter: {
+                    ...filter,
+                    category: null,
+                }
+            }, () => this.loadData());
+        } else {
+            this.setState({
+                filter: {
+                    ...filter,
+                    category: category && category.id || null,
+                }
+            }, () => this.loadData());
+        }
+    }
+
+    handleChangeSortBy = (e) => {
+        this.setState({ sort: e.target.value }, () => this.loadData());
+    }
+
+    handleGoToPage = (page) => {
+        this.setState({ page }, () => this.loadData());
+    }
+
     render() {
+        const { filter, sort, currentCategorySlug, page } = this.state;
+        const { colors, sizes, productCategories, products } = this.props;
+
+        const currentCategory = productCategories.filter(category => category.slug == currentCategorySlug)[0];
+
         return (
             <>
                 <div>
                     <div className="product-banner">
                         <img src="/img/product/banner.jpg" alt />
                     </div>
-                    {/* product items banner end */}
-                    {/* product main items area start */}
                     <div className="product-main-items">
                         <div className="container">
                             <div className="row">
@@ -17,7 +153,7 @@ export default class Shop extends Component {
                                     <div className="location">
                                         <ul>
                                             <li><a href="/" title="go to homepage">Home<span>/</span></a></li>
-                                            <li><strong> shop</strong></li>
+                                            <li><strong> Danh sách sản phẩm</strong></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -26,78 +162,102 @@ export default class Shop extends Component {
                                 <div className="col-sm-3">
                                     <div className="product-sidebar">
                                         <div className="sidebar-title">
-                                            <h2>Shopping Options</h2>
+                                            <h2>Lọc</h2>
                                         </div>
                                         <div className="single-sidebar">
                                             <div className="single-sidebar-title">
-                                                <h3>Category</h3>
+                                                <h3>Danh mục</h3>
                                             </div>
                                             <div className="single-sidebar-content">
                                                 <ul>
-                                                    <li><a href="#">Dresses (4)</a></li>
-                                                    <li><a href="#">shoes (6)</a></li>
-                                                    <li><a href="#">Handbags (1)</a></li>
-                                                    <li><a href="#">Clothing (3)</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div className="single-sidebar">
-                                            <div className="single-sidebar-title">
-                                                <h3>Color</h3>
-                                            </div>
-                                            <div className="single-sidebar-content">
-                                                <ul>
-                                                    <li><a href="#">Black (2)</a></li>
-                                                    <li><a href="#">Blue (2)</a></li>
-                                                    <li><a href="#">Green (4)</a></li>
-                                                    <li><a href="#">Grey (2)</a></li>
-                                                    <li><a href="#">Red (2)</a></li>
-                                                    <li><a href="#">White (2)</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div className="single-sidebar">
-                                            <div className="single-sidebar-title">
-                                                <h3>Manufacturer</h3>
-                                            </div>
-                                            <div className="single-sidebar-content">
-                                                <ul>
-                                                    <li><a href="#">Calvin Klein (2)</a></li>
-                                                    <li><a href="#">Diesel (2)</a></li>
-                                                    <li><a href="#">option value (1)</a></li>
-                                                    <li><a href="#">Polo (2)</a></li>
-                                                    <li><a href="#">store view (4)</a></li>
-                                                    <li><a href="#">Tommy Hilfiger (2)</a></li>
-                                                    <li><a href="#">will be used (1)</a></li>
+                                                    {currentCategory && currentCategory.children ? currentCategory.children.map(category => (
+                                                        <li key={category.id}><a href="#" style={filter.category == category.id ? { color: '#e03550' } : {}} onClick={(e) => {
+                                                            e.preventDefault();
+                                                            this.handleSelectCategory(category);
+                                                        }}>{category.name}</a></li>
+                                                    )) : ''}
                                                 </ul>
                                             </div>
                                         </div>
                                         <div className="single-sidebar price">
                                             <div className="single-sidebar-title">
-                                                <h3>Price</h3>
+                                                <h3>Giá</h3>
                                             </div>
                                             <div className="single-sidebar-content">
+                                                <p>Giá từ {Number(filter.priceRange[0]).toLocaleString()} đến {Number(filter.priceRange[1]).toLocaleString()} VNĐ</p>
                                                 <div className="price-range">
                                                     <div className="price-filter">
                                                         <div id="slider-range" />
-                                                        <div className="price-slider-amount">
-                                                            <input type="text" id="amount" name="price" placeholder="Add Your Price" />
-                                                        </div>
                                                     </div>
-                                                    <button type="submit"> <span>search</span> </button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="banner-left">
-                                            <a href="#">
-                                                <img src="/img/product/banner_left.jpg" alt />
-                                            </a>
+                                        <div className="single-sidebar">
+                                            <div className="single-sidebar-title">
+                                                <h3>Màu sắc</h3>
+                                            </div>
+                                            <div className="single-sidebar-content" style={{
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                flexWrap: 'wrap',
+                                                margin: '0 -5px',
+                                            }} >
+                                                {colors && colors.map(color => (
+                                                    <a key={color.id} href="#" style={{
+                                                        backgroundColor: color.color_code,
+                                                        display: 'inline-block',
+                                                        width: 25,
+                                                        height: 25,
+                                                        margin: 5,
+                                                        borderRadius: '100%',
+                                                        color: '#ffffff',
+                                                        fontSize: 10,
+                                                        textAlign: 'center',
+                                                        lineHeight: '25px',
+                                                    }} onClick={(e) => {
+                                                        e.preventDefault();
+                                                        this.handleSelectColor(color);
+                                                    }}>
+                                                        {filter.color == color.id ? <span className="glyphicon glyphicon-ok" aria-hidden="true"></span> : ''}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="single-sidebar">
+                                            <div className="single-sidebar-title">
+                                                <h3>Kích cỡ</h3>
+                                            </div>
+                                            <div className="single-sidebar-content" style={{
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                flexWrap: 'wrap',
+                                                margin: '0 -5px',
+                                            }} >
+                                                {sizes && sizes.map(size => (
+                                                    <a key={size.id} href="#" style={{
+                                                        backgroundColor: filter.sizes && filter.sizes.includes(size.id) ? '#000000' : 'transparent',
+                                                        display: 'inline-block',
+                                                        width: 35,
+                                                        height: 35,
+                                                        margin: 5,
+                                                        color: filter.sizes && filter.sizes.includes(size.id) ? '#ffffff' : '#000000',
+                                                        fontSize: 14,
+                                                        textAlign: 'center',
+                                                        lineHeight: '35px',
+                                                    }} onClick={(e) => {
+                                                        e.preventDefault();
+                                                        this.handleSelectSize(size);
+                                                    }}>
+                                                        {size.size}
+                                                    </a>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-9">
                                     <div className="product-bar">
-                                        <ul className="product-navigation" role="tablist">
+                                        {/* <ul className="product-navigation" role="tablist">
                                             <li role="presentation" className="active gird">
                                                 <a href="#gird" aria-controls="gird" role="tab" data-toggle="tab">
                                                     <span>
@@ -116,527 +276,76 @@ export default class Shop extends Component {
                                                     List
                                                 </a>
                                             </li>
-                                        </ul>
+                                        </ul> */}
                                         <div className="sort-by">
-                                            <label>Sort By</label>
-                                            <select name="sort">
-                                                <option value="#" selected>Position</option>
-                                                <option value="#">Name</option>
-                                                <option value="#">Price</option>
+                                            <label>Sắp xếp theo</label>
+                                            <select name="sort" onChange={this.handleChangeSortBy}>
+                                                <option value="updated_at DESC" selected={sort == 'updated_at DESC'}>Mới nhất</option>
+                                                <option value="updated_at ASC" selected={sort == 'updated_at ASC'}>Cũ nhất</option>
                                             </select>
-                                            <a href="#" title="Set Descending Direction">
-                                                <img src="/img/product/i_asc_arrow.gif" alt />
-                                            </a>
-                                        </div>
-                                        <div className="limit-product">
-                                            <label>Show</label>
-                                            <select name="show">
-                                                <option value="#" selected>9</option>
-                                                <option value="#">12</option>
-                                                <option value="#">24</option>
-                                                <option value="#">36</option>
-                                            </select>
-                                            per page
                                         </div>
                                     </div>
                                     <div className="row">
                                         <div className="product-content">
                                             <div className="tab-content">
                                                 <div role="tabpanel" className="tab-pane active fade in home2" id="gird">
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/25.png" alt className="primary-img" />
-                                                                    <img src="/img/product/26.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
+                                                    {
+                                                        products && products.data && products.data.length > 0 ? products.data.map(product => (
+                                                            <div className="col-lg-4 col-sm-6">
+                                                                <div className="single-product">
+                                                                    {
+                                                                        product && product.is_new && (
+                                                                            <div className="level-pro-new">
+                                                                                <span>SP Mới</span>
+                                                                            </div>
+                                                                        )
+                                                                    }
+                                                                    <div className="product-img">
+                                                                        <Link to={`/product/${product.slug}`}>
+                                                                            <img src={product.images && product.images[0] ? `${baseUrl}/${product.images[0].image_path}` : "/img/product/1.png"} alt className="primary-img" />
+                                                                            <img src={product.images && product.images[0] ? `${baseUrl}/${product.images[0].image_path}` : "/img/product/1.png"} alt className="secondary-img" />
+                                                                        </Link>
                                                                     </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/23.png" alt className="primary-img" />
-                                                                    <img src="/img/product/24.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/21.png" alt className="primary-img" />
-                                                                    <img src="/img/product/22.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/19.png" alt className="primary-img" />
-                                                                    <img src="/img/product/20.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/17.png" alt className="primary-img" />
-                                                                    <img src="/img/product/18.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/15.png" alt className="primary-img" />
-                                                                    <img src="/img/product/16.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/13.png" alt className="primary-img" />
-                                                                    <img src="/img/product/14.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/11.png" alt className="primary-img" />
-                                                                    <img src="/img/product/12.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-lg-4 col-sm-6">
-                                                        <div className="single-product">
-                                                            <div className="level-pro-new">
-                                                                <span>new</span>
-                                                            </div>
-                                                            <div className="product-img">
-                                                                <a href="/single-product">
-                                                                    <img src="/img/product/9.png" alt className="primary-img" />
-                                                                    <img src="/img/product/10.png" alt className="secondary-img" />
-                                                                </a>
-                                                            </div>
-                                                            <div className="actions">
-                                                                <button type="submit" className="cart-btn" title="Add to cart">add to cart</button>
-                                                                <ul className="add-to-link">
-                                                                    <li><a className="modal-view" data-target="#productModal" data-toggle="modal" href="#"> <i className="fa fa-search" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-heart-o" /></a></li>
-                                                                    <li><a href="#"> <i className="fa fa-refresh" /></a></li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="product-price">
-                                                                <div className="product-name">
-                                                                    <a href="/single-product" title="Fusce aliquam">Fusce aliquam</a>
-                                                                </div>
-                                                                <div className="price-rating">
-                                                                    <span>$170.00</span>
-                                                                    <div className="ratings">
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star" />
-                                                                        <i className="fa fa-star-half-o" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div role="tabpanel" className="tab-pane fade home2" id="list">
-                                                    <div className="product-catagory">
-                                                        <div className="single-list-product">
-                                                            <div className="col-sm-4">
-                                                                <div className="list-product-img">
-                                                                    <a href="/single-product">
-                                                                        <img src="/img/product/1.png" alt />
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-sm-8">
-                                                                <div className="list-product-info">
-                                                                    <a href="/single-product" className="list-product-name"> Cras neque metus</a>
-                                                                    <div className="price-rating">
-                                                                        <span className="old-price">$700.00</span>
-                                                                        <span>$800.00</span>
-                                                                        <div className="ratings">
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star-half-o" />
-                                                                            <a href="#" className="review">1 Review(s)</a>
-                                                                            <a href="#" className="add-review">Add Your Review</a>
+                                                                    <div className="product-price">
+                                                                        <div className="product-name">
+                                                                            <Link to={`/product/${product.slug}`}>{product.name}</Link>
+                                                                        </div>
+                                                                        <div className="price-rating">
+                                                                            <span>{product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VNĐ` : '0 VNĐ'}</span>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="list-product-details">
-                                                                        <p>Nunc facilisis sagittis ullamcorper. Proin lectus ipsum, gravida et mattis vulputate, tristique ut lectus. Sed et lorem nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aenean eleifend laoreet congue. Vivamus adipiscing nisl ut dolor dignissim semper. Nul
-                                                                            <a href="/single-product">Learn More</a> </p>
+                                                                    <div className="actions" style={{ width: '100%' }}>
+                                                                        <Link to={`/product/${product.slug}`} style={{ display: 'block', width: '100%' }}>
+                                                                            <button style={{ width: '100%' }} type="submit" className="cart-btn">Xem chi tiết</button>
+                                                                        </Link>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        <div className="single-list-product">
-                                                            <div className="col-sm-4">
-                                                                <div className="list-product-img">
-                                                                    <a href="/single-product">
-                                                                        <img src="/img/product/6.png" alt />
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-sm-8">
-                                                                <div className="list-product-info">
-                                                                    <a href="/single-product" className="list-product-name"> Cras neque metus</a>
-                                                                    <div className="price-rating">
-                                                                        <span className="old-price">$700.00</span>
-                                                                        <span>$800.00</span>
-                                                                        <div className="ratings">
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star-half-o" />
-                                                                            <a href="#" className="review">1 Review(s)</a>
-                                                                            <a href="#" className="add-review">Add Your Review</a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="list-product-details">
-                                                                        <p>Nunc facilisis sagittis ullamcorper. Proin lectus ipsum, gravida et mattis vulputate, tristique ut lectus. Sed et lorem nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aenean eleifend laoreet congue. Vivamus adipiscing nisl ut dolor dignissim semper. Nul
-                                                                            <a href="/single-product">Learn More</a> </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="single-list-product">
-                                                            <div className="col-sm-4">
-                                                                <div className="list-product-img">
-                                                                    <a href="/single-product">
-                                                                        <img src="/img/product/3.png" alt />
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-sm-8">
-                                                                <div className="list-product-info">
-                                                                    <a href="/single-product" className="list-product-name"> Cras neque metus</a>
-                                                                    <div className="price-rating">
-                                                                        <span className="old-price">$700.00</span>
-                                                                        <span>$800.00</span>
-                                                                        <div className="ratings">
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star-half-o" />
-                                                                            <a href="#" className="review">1 Review(s)</a>
-                                                                            <a href="#" className="add-review">Add Your Review</a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="list-product-details">
-                                                                        <p>Nunc facilisis sagittis ullamcorper. Proin lectus ipsum, gravida et mattis vulputate, tristique ut lectus. Sed et lorem nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aenean eleifend laoreet congue. Vivamus adipiscing nisl ut dolor dignissim semper. Nul
-                                                                            <a href="/single-product">Learn More</a> </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="single-list-product">
-                                                            <div className="col-sm-4">
-                                                                <div className="list-product-img">
-                                                                    <a href="/single-product">
-                                                                        <img src="/img/product/4.png" alt />
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-sm-8">
-                                                                <div className="list-product-info">
-                                                                    <a href="/single-product" className="list-product-name"> Cras neque metus</a>
-                                                                    <div className="price-rating">
-                                                                        <span className="old-price">$700.00</span>
-                                                                        <span>$800.00</span>
-                                                                        <div className="ratings">
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star-half-o" />
-                                                                            <a href="#" className="review">1 Review(s)</a>
-                                                                            <a href="#" className="add-review">Add Your Review</a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="list-product-details">
-                                                                        <p>Nunc facilisis sagittis ullamcorper. Proin lectus ipsum, gravida et mattis vulputate, tristique ut lectus. Sed et lorem nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aenean eleifend laoreet congue. Vivamus adipiscing nisl ut dolor dignissim semper. Nul
-                                                                            <a href="/single-product">Learn More</a> </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="single-list-product">
-                                                            <div className="col-sm-4">
-                                                                <div className="list-product-img">
-                                                                    <a href="/single-product">
-                                                                        <img src="/img/product/5.png" alt />
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-sm-8">
-                                                                <div className="list-product-info">
-                                                                    <a href="/single-product" className="list-product-name"> Cras neque metus</a>
-                                                                    <div className="price-rating">
-                                                                        <span className="old-price">$700.00</span>
-                                                                        <span>$800.00</span>
-                                                                        <div className="ratings">
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star" />
-                                                                            <i className="fa fa-star-half-o" />
-                                                                            <a href="#" className="review">1 Review(s)</a>
-                                                                            <a href="#" className="add-review">Add Your Review</a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="list-product-details">
-                                                                        <p>Nunc facilisis sagittis ullamcorper. Proin lectus ipsum, gravida et mattis vulputate, tristique ut lectus. Sed et lorem nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aenean eleifend laoreet congue. Vivamus adipiscing nisl ut dolor dignissim semper. Nul
-                                                                            <a href="/single-product">Learn More</a> </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                        )) : ''
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="col-md-12">
                                             <div className="toolbar-bottom">
                                                 <ul>
-                                                    <li><span>Pages:</span></li>
-                                                    <li className="current"><a href="#">1</a></li>
-                                                    <li><a href="#">2</a></li>
-                                                    <li><a href="#">3</a></li>
-                                                    <li><a href="#"> <img src="/img/product/pager_arrow_right.gif" alt /> </a></li>
+                                                    <li><span>Trang:</span></li>
+                                                    {products && products.totalPage ? (
+                                                        Array.from(Array(products.totalPage).keys()).map(pageKey => (
+                                                            <li className={page == (pageKey + 1) ? 'current' : ''}><a onClick={(e) => {
+                                                                e.preventDefault();
+                                                                if (page != (pageKey + 1)) {
+                                                                    this.handleGoToPage(pageKey + 1);
+                                                                }
+                                                            }} href="#">{pageKey + 1}</a></li>
+                                                        ))
+                                                    ) : ''}
+                                                    {products && products.totalPage && products.totalPage > 1 && page < products.totalPage ? (
+                                                        <li><a onClick={(e) => {
+                                                            e.preventDefault();
+                                                            this.handleGoToPage(page + 1);
+                                                        }} href="#"> <img src="/img/product/pager_arrow_right.gif" alt /> </a></li>
+                                                    ) : ''}
                                                 </ul>
                                             </div>
                                         </div>
@@ -651,3 +360,21 @@ export default class Shop extends Component {
         )
     }
 }
+
+const mapStateToProps = (state) => {
+    return {
+        loading: state.common.loading,
+        colors: state.colors.colors,
+        sizes: state.sizes.sizes,
+        productCategories: state.productCategories.productCategories,
+        products: state.products.products,
+    }
+}
+
+const mapDispatchToProps = dispatch => ({
+    getProducts: (params) => dispatch(actions.getProducts(params)),
+    getColors: (params) => dispatch(actions.getColors(params)),
+    getSizes: (params) => dispatch(actions.getSizes(params)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Category))

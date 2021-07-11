@@ -20,9 +20,9 @@ export const signInSuccess = (userData) => ({
     userData
 })
 
-export const signOut = (signupData) => ({
+export const signOut = (cb) => ({
     type: SIGN_OUT,
-    signupData
+    cb
 })
 
 export const signOutSuccess = (userData) => ({
@@ -30,8 +30,9 @@ export const signOutSuccess = (userData) => ({
     userData
 })
 
-export const getUserInfo = () => ({
-    type: GET_USER_INFO
+export const getUserInfo = (cb) => ({
+    type: GET_USER_INFO,
+    cb
 })
 
 export const getUserInfoSuccess = (userData) => ({

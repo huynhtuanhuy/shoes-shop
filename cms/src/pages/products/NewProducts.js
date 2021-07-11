@@ -297,7 +297,7 @@ class NewProducts extends Component {
                                     />
                                 </CFormGroup>
                                 <CFormGroup>
-                                    <CLabel htmlFor="is_disable">Hiển thị sản phẩm</CLabel>
+                                    <CLabel htmlFor="is_disable">Ẩn sản phẩm</CLabel>
                                     <CSwitch
                                         className="ml-2"
                                         color="info"

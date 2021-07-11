@@ -1,6 +1,6 @@
 import { axios } from './index.js';
 
-const PRODUCTS_URL = '/products'
+const PRODUCTS_URL = '/fe/products'
 
 export function getProducts (params) {
     return axios.get(
@@ -11,34 +11,35 @@ export function getProducts (params) {
     );
 }
 
-export function getProductOptions (params) {
+export function getSingleProduct (productId) {
     return axios.get(
-        `${PRODUCTS_URL}/options`,
+        `${PRODUCTS_URL}/${productId}/by-slug`
     );
 }
 
-export function getSingleProduct (id) {
+export function getTopFeaturedProducts (params) {
     return axios.get(
-        `${PRODUCTS_URL}/${id}`,
+        `${PRODUCTS_URL}/top-featured`,
+        {
+            params: params || {}
+        }
     );
 }
 
-export function createProduct (product) {
-    return axios.post(
-        `${PRODUCTS_URL}`,
-        product,
+export function getTopViewProducts (params) {
+    return axios.get(
+        `${PRODUCTS_URL}/top-view`,
+        {
+            params: params || {}
+        }
     );
 }
 
-export function updateProduct (id, product) {
-    return axios.put(
-        `${PRODUCTS_URL}/${id}`,
-        product,
-    );
-}
-
-export function deleteProduct (id) {
-    return axios.delete(
-        `${PRODUCTS_URL}/${id}`,
+export function getTopNewProducts (params) {
+    return axios.get(
+        `${PRODUCTS_URL}/top-new`,
+        {
+            params: params || {}
+        }
     );
 }

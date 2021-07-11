@@ -965,7 +965,7 @@ body {
     position: relative;
 }
 .product-img a .secondary-img {
-    height: 100%;
+    height: 150px;
     left: 0;
     position: absolute;
     top: 0;
@@ -974,9 +974,16 @@ body {
     width: 100%;
     opacity: 0;
     visibility: hidden;
+    object-fit: contain;
+    object-position: center;
 }
 .product-img a .primary-img {
     transition: all 0.5s ease 0s;
+    height: 150px;
+    width: 100%;
+    object-fit: contain;
+    object-position: center;
+
 }
 .single-product:hover .product-img a .primary-img {
     transform: translate3d(-100%, 0px, 0px);
@@ -2015,6 +2022,7 @@ ul.address li span {
     margin-top: 10px;
     padding: 0px 10px;
 }
+.product-bar .sort-by,
 .product-bar .limit-product {
     float: right;
 }
@@ -2269,7 +2277,6 @@ ul.address li span {
 }
 .color-select label, .size-select label {
     font-weight: 300;
-    text-transform: lowercase;
     font-size: 13px;
 }
 .color-select {
@@ -2313,11 +2320,11 @@ ul.address li span {
     border: 1px solid #eee;
     font-weight: 700;
     height: 35px;
-    left: 60px;
     margin: 5px;
     position: relative;
     text-align: center;
     width: 35px;
+    user-select: none;
 }
 .qtybutton {
     background-color: #ccc;
@@ -2325,12 +2332,11 @@ ul.address li span {
     cursor: pointer;
     font-size: 16px;
     height: 25px;
-    left: 50px;
     line-height: 25px;
-    position: absolute;
     text-align: center;
-    top: 10px;
     width: 25px;
+    display: inline-block;
+    margin: 0 10px;
 }
 .qtybutton:hover {
     background-color: #e03550;
@@ -2338,7 +2344,7 @@ ul.address li span {
 .cart-plus-minus {
     display: inline-block;
     position: relative;
-    width: 175px;
+    width: 50%;
 }
 .inc.qtybutton {
     left: 155px;
@@ -2753,6 +2759,7 @@ button.check-button:hover,
 
 .about-page {
     padding-top: 30px;
+    padding-bottom: 30px;
 }
 .about-page-content h3 {
     font-size: 20px;
@@ -3350,7 +3357,7 @@ button.check-button:hover,
 
 
 .single-product-img.tab-content {
-  min-height: 560px;
+  /* min-height: 560px; */
 }
 
 

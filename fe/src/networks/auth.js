@@ -9,6 +9,13 @@ export function signIn (signinData) {
     );
 }
 
+export function signUp (signupData) {
+    return axios.post(
+        `${AUTH_URL}/signup`,
+        signupData,
+    );
+}
+
 export function signOut (signoutData) {
     return axios.post(
         `${AUTH_URL}/signout`,

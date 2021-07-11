@@ -15,7 +15,9 @@ import BlogDetail from '../pages/BlogDetail';
 import Register from '../pages/Register';
 import Login from '../pages/Login';
 import MyAccount from '../pages/MyAccount';
+import MyOrder from '../pages/MyOrder';
 import Wishlist from '../pages/Wishlist';
+import AboutUs from '../pages/AboutUs';
 
 export default function Routers() {
   return (
@@ -29,11 +31,17 @@ export default function Routers() {
       <Route path="/my-account">
         <MyAccount />
       </Route>
+      <Route path="/my-order">
+        <MyOrder />
+      </Route>
       <Route path="/wishlist">
         <Wishlist />
       </Route>
       <Route path="/contact">
         <Contact />
+      </Route>
+      <Route path="/about-us">
+        <AboutUs />
       </Route>
       <Route path="/blog/abc">
         <BlogDetail />
@@ -47,12 +55,12 @@ export default function Routers() {
       <Route path="/cart">
         <Cart />
       </Route>
-      <Route path="/single-product">
+      <Route path="/product/:slug">
         <SingleProduct />
       </Route>
-      <Route path="/category/:slug/:childSlug">
+      {/* <Route path="/category/:slug/:childSlug">
         <Category />
-      </Route>
+      </Route> */}
       <Route path="/category/:slug">
         <Category />
       </Route>

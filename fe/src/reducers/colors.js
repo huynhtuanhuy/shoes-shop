@@ -6,12 +6,7 @@ import {
 } from '../actions/actionTypes';
 
 const initialState = {
-    colors: {
-        data: [],
-        page: 0,
-        total: 0,
-        perPage: 0,
-    }
+    colors: [],
 }
 
 const getColorsSuccess = (state, action) => {

@@ -6,25 +6,15 @@ import {
     UPDATE_PASSWORD,
     UPDATE_PROFILE,
     GET_PRODUCT_CATEGORIES,
-    GET_USERS,
-    CREATE_USER,
-    UPDATE_USER,
-    DELETE_USER,
     GET_PRODUCTS,
-    GET_PRODUCT_DETAIL_SALES,
-    CREATE_PRODUCT_DETAIL_SALE,
-    UPDATE_PRODUCT_DETAIL_SALE,
-    DELETE_PRODUCT_DETAIL_SALE,
-    GET_ORDERS,
-    UPDATE_ORDER,
+    GET_TOP_FEATURED_PRODUCTS,
+    GET_TOP_NEW_PRODUCTS,
+    GET_TOP_VIEW_PRODUCTS,
     GET_COLORS,
-    CREATE_COLOR,
-    UPDATE_COLOR,
-    DELETE_COLOR,
     GET_SIZES,
-    CREATE_SIZE,
-    UPDATE_SIZE,
-    DELETE_SIZE,
+    GET_CARTS,
+    UPDATE_CARTS,
+    GET_ORDERS,
 } from '../../actions/actionTypes';
 
 import {
@@ -40,44 +30,26 @@ import {
 } from './productCategories';
 
 import {
-    getUsersSaga,
-    createUserSaga,
-    updateUserSaga,
-    deleteUserSaga,
-} from './users';
-
-import {
     getProductsSaga,
-    createProductSaga,
-    updateProductSaga,
-    deleteProductSaga,
+    getTopFeaturedProductsSaga,
+    getTopNewProductsSaga,
+    getTopViewProductsSaga,
 } from './products';
 
 import {
     getSizesSaga,
-    createSizeSaga,
-    updateSizeSaga,
-    deleteSizeSaga,
 } from './sizes';
 
 import {
     getColorsSaga,
-    createColorSaga,
-    updateColorSaga,
-    deleteColorSaga,
 } from './colors';
 
 import {
-    getProductDetailSalesSaga,
-    createProductDetailSaleSaga,
-    updateProductDetailSaleSaga,
-    deleteProductDetailSaleSaga,
-} from './productDetailSales';
+    getCartsSaga,
+    updateCartsSaga,
+} from './carts';
 
-import {
-    getOrdersSaga,
-    updateOrderSaga,
-} from './orders';
+import { getOrdersSaga } from './orders';
 
 export function* watchAuth() {
     yield takeEvery(SIGN_IN, signInSaga);
@@ -91,39 +63,26 @@ export function* watchProductCategories() {
     yield takeEvery(GET_PRODUCT_CATEGORIES, getProductCategoriesSaga);
 }
 
-export function* watchUsers() {
-    yield takeEvery(GET_USERS, getUsersSaga);
-    yield takeEvery(CREATE_USER, createUserSaga);
-    yield takeEvery(UPDATE_USER, updateUserSaga);
-    yield takeEvery(DELETE_USER, deleteUserSaga);
-}
-
 export function* watchProducts() {
     yield takeEvery(GET_PRODUCTS, getProductsSaga);
+    yield takeEvery(GET_TOP_FEATURED_PRODUCTS, getTopFeaturedProductsSaga);
+    yield takeEvery(GET_TOP_NEW_PRODUCTS, getTopNewProductsSaga);
+    yield takeEvery(GET_TOP_VIEW_PRODUCTS, getTopViewProductsSaga);
 }
 
 export function* watchColors() {
     yield takeEvery(GET_COLORS, getColorsSaga);
-    yield takeEvery(CREATE_COLOR, createColorSaga);
-    yield takeEvery(UPDATE_COLOR, updateColorSaga);
-    yield takeEvery(DELETE_COLOR, deleteColorSaga);
 }
 
 export function* watchSizes() {
     yield takeEvery(GET_SIZES, getSizesSaga);
-    yield takeEvery(CREATE_SIZE, createSizeSaga);
-    yield takeEvery(UPDATE_SIZE, updateSizeSaga);
-    yield takeEvery(DELETE_SIZE, deleteSizeSaga);
 }
 
-export function* watchProductDetailSales() {
-    yield takeEvery(GET_PRODUCT_DETAIL_SALES, getProductDetailSalesSaga);
-    yield takeEvery(CREATE_PRODUCT_DETAIL_SALE, createProductDetailSaleSaga);
-    yield takeEvery(UPDATE_PRODUCT_DETAIL_SALE, updateProductDetailSaleSaga);
-    yield takeEvery(DELETE_PRODUCT_DETAIL_SALE, deleteProductDetailSaleSaga);
+export function* watchCarts() {
+    yield takeEvery(GET_CARTS, getCartsSaga);
+    yield takeEvery(UPDATE_CARTS, updateCartsSaga);
 }
 
 export function* watchOrders() {
     yield takeEvery(GET_ORDERS, getOrdersSaga);
-    yield takeEvery(UPDATE_ORDER, updateOrderSaga);
 }

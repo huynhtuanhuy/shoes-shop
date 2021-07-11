@@ -132,9 +132,9 @@ module.exports = {
 		}
 	},
 	signUp: async (req, res) => {
-		const { email, password, fullname, username } = req.body;
+		const { email, password, fullname } = req.body;
 
-		if (!email || !password || !username || !fullname) {
+		if (!email || !password || !fullname) {
 			return res.status(400).json({
 				success: 0,
 				data: null,
@@ -146,7 +146,7 @@ module.exports = {
 			const hashPassword = bcrypt.hashSync(password, 12);
 			const now = new Date();
 
-			const userFoundByUsername = await Users.findOne({ username });
+			const userFoundByUsername = await Users.findOne({ username: email });
 
 			if (userFoundByUsername && userFoundByUsername.id) {
 				return res.status(400).json({
@@ -168,7 +168,7 @@ module.exports = {
 
 			const user = await Users.create({
 				email,
-				username,
+				username: email,
 				password: hashPassword,
 				fullname,
 			}).fetch();
@@ -176,7 +176,7 @@ module.exports = {
 			return res.json({
 				success: 1,
 				data: {
-					username,
+					username: email,
 					email,
 					fullname,
 				},

@@ -11,7 +11,8 @@ const initialState = {
         page: 0,
         total: 0,
         perPage: 0,
-    }
+        totalPage: 1,
+    },
 }
 
 const getOrdersSuccess = (state, action) => {

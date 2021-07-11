@@ -56,7 +56,7 @@ class Products extends Component {
         </span>)
       },
       {
-        Header: 'Hiển thị sản phẩm',
+        Header: 'Ẩn sản phẩm',
         accessor: 'is_disable',
         filterable: false,
         sortable: false,

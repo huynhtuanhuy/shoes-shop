@@ -14,6 +14,8 @@ import * as actions from './actions';
 class App extends Component {
   componentDidMount() {
     this.props.getProductCategories();
+    this.props.getCarts();
+    this.props.getUserInfo();
   }
   
   render() {
@@ -38,6 +40,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = dispatch => ({
   getProductCategories: (params) => dispatch(actions.getProductCategories(params)),
+  getCarts: (params) => dispatch(actions.getCarts(params)),
+  getUserInfo: (params) => dispatch(actions.getUserInfo(params)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

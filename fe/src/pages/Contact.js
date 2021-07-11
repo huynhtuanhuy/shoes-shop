@@ -10,66 +10,17 @@ export default class Contact extends Component {
                             <div className="location">
                                 <ul>
                                     <li><a href="/" title="go to homepage">Home<span>/</span></a></li>
-                                    <li><strong> contact</strong></li>
+                                    <li><strong> Liên hệ</strong></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-sm-3">
-                            <div className="product-sidebar">
-                                <div className="sidebar-title">
-                                    <h2>Shopping Options</h2>
-                                </div>
-                                <div className="single-sidebar">
-                                    <div className="single-sidebar-title">
-                                        <h3>Category</h3>
-                                    </div>
-                                    <div className="single-sidebar-content">
-                                        <ul>
-                                            <li><a href="#">Dresses (4)</a></li>
-                                            <li><a href="#">shoes (6)</a></li>
-                                            <li><a href="#">Handbags (1)</a></li>
-                                            <li><a href="#">Clothing (3)</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="single-sidebar">
-                                    <div className="single-sidebar-title">
-                                        <h3>Color</h3>
-                                    </div>
-                                    <div className="single-sidebar-content">
-                                        <ul>
-                                            <li><a href="#">Black (2)</a></li>
-                                            <li><a href="#">Blue (2)</a></li>
-                                            <li><a href="#">Green (4)</a></li>
-                                            <li><a href="#">Grey (2)</a></li>
-                                            <li><a href="#">Red (2)</a></li>
-                                            <li><a href="#">White (2)</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="single-sidebar">
-                                    <div className="single-sidebar-title">
-                                        <h3>Manufacturer</h3>
-                                    </div>
-                                    <div className="single-sidebar-content">
-                                        <ul>
-                                            <li><a href="#">Calvin Klein (2)</a></li>
-                                            <li><a href="#">Diesel (2)</a></li>
-                                            <li><a href="#">option value (1)</a></li>
-                                            <li><a href="#">Polo (2)</a></li>
-                                            <li><a href="#">store view (4)</a></li>
-                                            <li><a href="#">Tommy Hilfiger (2)</a></li>
-                                            <li><a href="#">will be used (1)</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-sm-9">
+                        <div className="col-sm-8 col-sm-offset-2">
                             <div className="contact-info">
-                                <div id="googleMap" />
+                                <div id="googleMap">
+                                    <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d7448.184890120996!2d105.84021709870453!3d21.028986735502876!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab44b9e5c745%3A0x7897e27fbc98f284!2zSOG7kyBHxrDGoW0!5e0!3m2!1svi!2s!4v1625944216663!5m2!1svi!2s" width="100%" height="100%" style={{ height: '100%', border: 0, minHeight: 350 }} allowFullScreen="" loading="lazy"></iframe>
+                                </div>
                                 <div className="contact-details">
                                     <div className="contact-title">
                                         <h3>contact us</h3>

@@ -4,13 +4,18 @@ import { toast } from 'react-toastify';
 import {
     getProductsSuccess,
     getProductsError,
-    toggleLoading,
+    getTopNewProductsSuccess,
+    getTopNewProductsError,
+    getTopFeaturedProductsSuccess,
+    getTopFeaturedProductsError,
+    getTopViewProductsSuccess,
+    getTopViewProductsError,
 } from '../../actions';
 import {
     getProducts,
-    createProduct,
-    updateProduct,
-    deleteProduct,
+    getTopFeaturedProducts,
+    getTopViewProducts,
+    getTopNewProducts,
 } from '../../networks';
 
 export function* getProductsSaga(action) {
@@ -29,53 +34,50 @@ export function* getProductsSaga(action) {
     }
 }
 
-export function* createProductSaga(action) {
+export function* getTopNewProductsSaga(action) {
     try {
-        let result = yield createProduct(action.product);
+        let result = yield getTopNewProducts(action.params);
 
-        if (result.data) {
-            toast.success('Tạo sản phẩm mới thành công.');
-            if (action.cb) {
-                action.cb();
-            }
+        if (result.data && result.data.data) {
+            yield put(getTopNewProductsSuccess(result.data.data));
         } else {
             toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+            yield put(getTopNewProductsError());
         }
     } catch (error) {
         toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        yield put(getTopNewProductsError());
     }
 }
 
-export function* updateProductSaga(action) {
+export function* getTopFeaturedProductsSaga(action) {
     try {
-        let result = yield updateProduct(action.product.id, action.product);
+        let result = yield getTopFeaturedProducts(action.params);
 
-        if (result.data) {
-            toast.success('Chỉnh sửa sản phẩm thành công.');
-            if (action.cb) {
-                action.cb();
-            }
+        if (result.data && result.data.data) {
+            yield put(getTopFeaturedProductsSuccess(result.data.data));
         } else {
             toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+            yield put(getTopFeaturedProductsError());
         }
     } catch (error) {
         toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        yield put(getTopFeaturedProductsError());
     }
 }
 
-export function* deleteProductSaga(action) {
+export function* getTopViewProductsSaga(action) {
     try {
-        let result = yield deleteProduct(action.productId);
+        let result = yield getTopViewProducts(action.params);
 
-        if (result.data) {
-            toast.success('Xóa sản phẩm thành công.');
-            if (action.cb) {
-                action.cb();
-            }
+        if (result.data && result.data.data) {
+            yield put(getTopViewProductsSuccess(result.data.data));
         } else {
             toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+            yield put(getTopViewProductsError());
         }
     } catch (error) {
         toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        yield put(getTopViewProductsError());
     }
 }

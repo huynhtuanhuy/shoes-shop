@@ -5,12 +5,11 @@ import reducers from '../reducers';
 import {
   watchAuth,
   watchProductCategories,
-  watchUsers,
   watchProducts,
-  watchProductDetailSales,
-  watchOrders,
   watchColors,
   watchSizes,
+  watchCarts,
+  watchOrders,
 } from './sagas';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -22,11 +21,10 @@ const store = createStore(
 
 sagaMiddleware.run(watchAuth);
 sagaMiddleware.run(watchProductCategories);
-sagaMiddleware.run(watchUsers);
 sagaMiddleware.run(watchProducts);
-sagaMiddleware.run(watchProductDetailSales);
-sagaMiddleware.run(watchOrders);
 sagaMiddleware.run(watchColors);
 sagaMiddleware.run(watchSizes);
+sagaMiddleware.run(watchCarts);
+sagaMiddleware.run(watchOrders);
 
 export default store;

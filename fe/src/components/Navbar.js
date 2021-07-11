@@ -2,15 +2,24 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom';
 
+import * as actions from '../actions';
+
 class Navbar extends Component {
+    signOut = () => {
+        this.props.signOut(() => {
+            window.location.href = "/";
+        });
+    }
+
+
     renderCategories = () => {
         const { productCategories } = this.props;
-        console.log(productCategories)
+
         return (productCategories || []).map(productCategory => {
             return (
                 <li key={productCategory.id}>
                     <Link to={`/category/${productCategory.slug}`}>{productCategory.name}</Link>
-                    {productCategory.children && productCategory.children.length > 0 ? (
+                    {/* {productCategory.children && productCategory.children.length > 0 ? (
                         <div className="mega-menu">
                             {productCategory.children.map(productCategoryChild => {
                                 return (
@@ -20,13 +29,14 @@ class Navbar extends Component {
                                 );
                             })}
                         </div>
-                    ) : null}
+                    ) : null} */}
                 </li>
             )
         });
     }
 
     render() {
+        const { carts, userInfo, isAuth } = this.props;
 
         return (
             <header>
@@ -34,22 +44,6 @@ class Navbar extends Component {
                     <div className="container">
                         <div className="row">
                             <div className="col-md-7 col-md-offset-3 col-sm-9 hidden-xs">
-                                <div className="site-option">
-                                    <ul>
-                                        <li className="currency"><a href="#">USD <i className="fa fa-angle-down"></i> </a>
-                                            <ul className="sub-site-option">
-                                                <li><a href="#">Eur</a></li>
-                                                <li><a href="#">Usd</a></li>
-                                            </ul>
-                                        </li>
-                                        <li className="language"><a href="#">English <i className="fa fa-angle-down"></i> </a>
-                                            <ul className="sub-site-option">
-                                                <li><a href="#">English</a></li>
-                                                <li><a href="#">English2</a></li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
                                 <div className="call-support">
                                     <p>Call support free: <span> (800) 123 456 789</span></p>
                                 </div>
@@ -58,54 +52,41 @@ class Navbar extends Component {
                                 <div className="dashboard">
                                     <div className="account-menu">
                                         <ul>
-                                            <li>
-                                                <a href="#">
-                                                    <i className="fa fa-bars"></i>
-                                                </a>
-                                                <ul>
-                                                    <li><a href="/my-account">my account</a></li>
-                                                    <li><a href="/wishlist">my wishlist</a></li>
-                                                    <li><a href="/cart">my cart</a></li>
-                                                    <li><a href="/checkout">Checkout</a></li>
-                                                    <li><a href="/blog">Blog</a></li>
-                                                    <li><a href="/login">Log in</a></li>
-                                                    <li><a href="/register">Register</a></li>
+                                            <li className="search">
+                                                <Link to="#">
+                                                    <i className="fa fa-search"></i>
+                                                </Link>
+                                                <ul className="search">
+                                                    <li>
+                                                        <form action="#">
+                                                            <input type="text" />
+                                                            <button type="submit"> <i className="fa fa-search"></i> </button>
+                                                        </form>
+                                                    </li>
                                                 </ul>
+                                            </li>
+                                            <li>
+                                                <Link to="#">
+                                                    <i className="fa fa-bars"></i>
+                                                </Link>
+                                                {isAuth ? (
+                                                    <ul>
+                                                        <li><Link to="/my-account">Thông tin cá nhân</Link></li>
+                                                        <li><Link to="/my-order">Lịch sử đặt hàng</Link></li>
+                                                        <li><Link to="#" onClick={this.signOut}>Đăng xuất</Link></li>
+                                                    </ul>
+                                                ) : (
+                                                    <ul>
+                                                        <li><Link to="/login">Đăng nhập</Link></li>
+                                                        <li><Link to="/register">Đăng ký</Link></li>
+                                                    </ul>
+                                                )}
                                             </li>
                                         </ul>
                                     </div>
                                     <div className="cart-menu">
                                         <ul>
-                                            <li><a href="/cart"> <img src="/img/icon-cart.png" alt="" /> <span>2</span> </a>
-                                                <div className="cart-info">
-                                                    <ul>
-                                                        <li>
-                                                            <div className="cart-img">
-                                                                <img src="/img/cart/1.png" alt="" />
-                                                            </div>
-                                                            <div className="cart-details">
-                                                                <a href="#">Fusce aliquam</a>
-                                                                <p>1 x $174.00</p>
-                                                            </div>
-                                                            <div className="btn-edit"></div>
-                                                            <div className="btn-remove"></div>
-                                                        </li>
-                                                        <li>
-                                                            <div className="cart-img">
-                                                                <img src="/img/cart/2.png" alt="" />
-                                                            </div>
-                                                            <div className="cart-details">
-                                                                <a href="#">Fusce aliquam</a>
-                                                                <p>1 x $777.00</p>
-                                                            </div>
-                                                            <div className="btn-edit"></div>
-                                                            <div className="btn-remove"></div>
-                                                        </li>
-                                                    </ul>
-                                                    <h3>Subtotal: <span> $951.00</span></h3>
-                                                    <a href="/checkout" className="checkout">checkout</a>
-                                                </div>
-                                            </li>
+                                            <li><Link to="/cart"> <img src="/img/icon-cart.png" alt="" /> {carts && carts.length > 0 ? <span>{carts.length}</span> : ''} </Link></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -118,9 +99,9 @@ class Navbar extends Component {
                         <div className="row">
                             <div className="col-md-3">
                                 <div className="logo">
-                                    <a href="/">
+                                    <Link to="/">
                                         <img src="/img/logo.png" alt="" />
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                             <div className="col-md-9">
@@ -131,47 +112,48 @@ class Navbar extends Component {
                                                 <Link to="/">Home</Link>
                                             </li>
                                             {this.renderCategories()}
-                                            <li><Link to="/contact">Contact</Link></li>
-                                            {/* <li><a href="#">Pages</a>
+                                            <li><Link to="/contact">Liên hệ</Link></li>
+                                            <li><Link to="/about-us">Về chúng tôi</Link></li>
+                                            {/* <li><Link to="#">Pages</Link>
                                                 <div className="sub-menu pages">
                                                     <span>
-                                                        <a href="about-us.html">About us</a>
+                                                        <Link to="about-us.html">About us</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="blog.html">Blog</a>
+                                                        <Link to="blog.html">Blog</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="blog-details.html">Blog Details</a>
+                                                        <Link to="blog-details.html">Blog Details</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="cart.html">Cart</a>
+                                                        <Link to="cart.html">Cart</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="checkout.html">Checkout</a>
+                                                        <Link to="checkout.html">Checkout</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="contact.html">Contact</a>
+                                                        <Link to="contact.html">Contact</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="my-account.html">My account</a>
+                                                        <Link to="my-account.html">My account</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="/shop">Shop</a>
+                                                        <Link to="/shop">Shop</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="shop-list.html">Shop list</a>
+                                                        <Link to="shop-list.html">Shop list</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="single-product.html">Single Shop</a>
+                                                        <Link to="single-product.html">Single Shop</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="login.html">Login page</a>
+                                                        <Link to="login.html">Login page</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="register.html">Ragister page</a>
+                                                        <Link to="register.html">Ragister page</Link>
                                                     </span>
                                                     <span>
-                                                        <a href="wishlist.html">Wishlist</a>
+                                                        <Link to="wishlist.html">Wishlist</Link>
                                                     </span>
                                                 </div>
                                             </li> */}
@@ -183,102 +165,103 @@ class Navbar extends Component {
                                 <div className="mobile-menu">
                                     <nav>
                                         <ul>
-                                            <li><a href="/">Home</a>
+                                            <li><Link to="/">Home</Link>
                                             </li>
-                                            <li><a href="/shop">Women</a>
+                                            <li><Link to="/shop">Women</Link>
                                                 <ul>
-                                                    <li><a href="#">Dresses</a>
+                                                    <li><Link to="#">Dresses</Link>
                                                         <ul>
-                                                            <li><a href="#">Coctail</a></li>
-                                                            <li><a href="#">day</a></li>
-                                                            <li><a href="#">evening</a></li>
-                                                            <li><a href="#">sports</a></li>
+                                                            <li><Link to="#">Coctail</Link></li>
+                                                            <li><Link to="#">day</Link></li>
+                                                            <li><Link to="#">evening</Link></li>
+                                                            <li><Link to="#">sports</Link></li>
                                                         </ul>
                                                     </li>
-                                                    <li><a href="#">shoes</a>
+                                                    <li><Link to="#">shoes</Link>
                                                         <ul>
-                                                            <li><a href="#">Sports</a></li>
-                                                            <li><a href="#">run</a></li>
-                                                            <li><a href="#">sandals</a></li>
-                                                            <li><a href="#">boots</a></li>
+                                                            <li><Link to="#">Sports</Link></li>
+                                                            <li><Link to="#">run</Link></li>
+                                                            <li><Link to="#">sandals</Link></li>
+                                                            <li><Link to="#">boots</Link></li>
                                                         </ul>
                                                     </li>
-                                                    <li><a href="#">handbags</a>
+                                                    <li><Link to="#">handbags</Link>
                                                         <ul>
-                                                            <li><a href="#">Blazers</a></li>
-                                                            <li><a href="#">table</a></li>
-                                                            <li><a href="#">coats</a></li>
-                                                            <li><a href="#">kids</a></li>
+                                                            <li><Link to="#">Blazers</Link></li>
+                                                            <li><Link to="#">table</Link></li>
+                                                            <li><Link to="#">coats</Link></li>
+                                                            <li><Link to="#">kids</Link></li>
                                                         </ul>
                                                     </li>
-                                                    <li><a href="#">clothing</a>
+                                                    <li><Link to="#">clothing</Link>
                                                         <ul>
-                                                            <li><a href="#">T-shirts</a></li>
-                                                            <li><a href="#">coats</a></li>
-                                                            <li><a href="#">Jackets</a></li>
-                                                            <li><a href="#">jeans</a></li>
+                                                            <li><Link to="#">T-shirts</Link></li>
+                                                            <li><Link to="#">coats</Link></li>
+                                                            <li><Link to="#">Jackets</Link></li>
+                                                            <li><Link to="#">jeans</Link></li>
                                                         </ul>
                                                     </li>
                                                 </ul>
                                             </li>
-                                            <li><a href="/shop">Men</a>
+                                            <li><Link to="/shop">Men</Link>
                                                 <ul>
-                                                    <li><a href="#">Bags</a>
+                                                    <li><Link to="#">Bags</Link>
                                                         <ul>
-                                                            <li><a href="#">Bootees bag</a></li>
-                                                            <li><a href="#">Blazers</a></li>
+                                                            <li><Link to="#">Bootees bag</Link></li>
+                                                            <li><Link to="#">Blazers</Link></li>
                                                         </ul>
                                                     </li>
-                                                    <li><a href="#">clothing</a>
+                                                    <li><Link to="#">clothing</Link>
                                                         <ul>
-                                                            <li><a href="#">coats</a></li>
-                                                            <li><a href="#">T-shirts</a></li>
+                                                            <li><Link to="#">coats</Link></li>
+                                                            <li><Link to="#">T-shirts</Link></li>
                                                         </ul>
                                                     </li>
-                                                    <li><a href="#">Lingerie</a>
+                                                    <li><Link to="#">Lingerie</Link>
                                                         <ul>
-                                                            <li><a href="#">Bands</a></li>
-                                                            <li><a href="#">Furniture</a></li>
+                                                            <li><Link to="#">Bands</Link></li>
+                                                            <li><Link to="#">Furniture</Link></li>
                                                         </ul>
                                                     </li>
                                                 </ul>
                                             </li>
-                                            <li><a href="/shop">Foorwear</a>
+                                            <li><Link to="/shop">Foorwear</Link>
                                                 <ul>
-                                                    <li><a href="#">footwear men</a>
+                                                    <li><Link to="#">footwear men</Link>
                                                         <ul>
-                                                            <li><a href="#">gifts</a></li>
+                                                            <li><Link to="#">gifts</Link></li>
                                                         </ul>
                                                     </li>
-                                                    <li><a href="#">footwear women</a>
+                                                    <li><Link to="#">footwear women</Link>
                                                         <ul>
-                                                            <li><a href="#">boots</a></li>
+                                                            <li><Link to="#">boots</Link></li>
                                                         </ul>
                                                     </li>
                                                 </ul>
                                             </li>
-                                            <li><a href="/shop">Jewellery</a>
+                                            <li><Link to="/shop">Jewellery</Link>
                                                 <ul>
-                                                    <li><a href="#">Rings</a></li>
+                                                    <li><Link to="#">Rings</Link></li>
                                                 </ul>
                                             </li>
-                                            <li><a href="/shop">Accessories</a></li>
-                                            <li><a href="/contact">Contact</a></li>
-                                            {/* <li><a href="#">Pages</a>
+                                            <li><Link to="/shop">Accessories</Link></li>
+                                            <li><Link to="/contact">Liên hệ</Link></li>
+                                            <li><Link to="/about-us">Về chúng tôi</Link></li>
+                                            {/* <li><Link to="#">Pages</Link>
                                                 <ul>
-                                                    <li><a href="about-us.html">About us</a></li>
-                                                    <li><a href="blog.html">Blog</a></li>
-                                                    <li><a href="blog-details.html">Blog Details</a></li>
-                                                    <li><a href="cart.html">Cart</a></li>
-                                                    <li><a href="checkout.html">Checkout</a></li>
-                                                    <li><a href="contact.html">Contact</a></li>
-                                                    <li><a href="my-account.html">My account</a></li>
-                                                    <li><a href="/shop">Shop</a></li>
-                                                    <li><a href="shop-list.html">Shop list</a></li>
-                                                    <li><a href="single-product.html">Single Shop</a></li>
-                                                    <li><a href="wishlist.html">Wishlist</a></li>
-                                                    <li><a href="login.html">login page</a></li>
-                                                    <li><a href="register.html">register page</a></li>
+                                                    <li><Link to="about-us.html">About us</Link></li>
+                                                    <li><Link to="blog.html">Blog</Link></li>
+                                                    <li><Link to="blog-details.html">Blog Details</Link></li>
+                                                    <li><Link to="cart.html">Cart</Link></li>
+                                                    <li><Link to="checkout.html">Checkout</Link></li>
+                                                    <li><Link to="contact.html">Contact</Link></li>
+                                                    <li><Link to="my-account.html">My account</Link></li>
+                                                    <li><Link to="/shop">Shop</Link></li>
+                                                    <li><Link to="shop-list.html">Shop list</Link></li>
+                                                    <li><Link to="single-product.html">Single Shop</Link></li>
+                                                    <li><Link to="wishlist.html">Wishlist</Link></li>
+                                                    <li><Link to="login.html">login page</Link></li>
+                                                    <li><Link to="register.html">register page</Link></li>
                                                 </ul>
                                             </li> */}
                                         </ul>
@@ -297,10 +280,14 @@ const mapStateToProps = (state) => {
     return {
         loading: state.common.loading,
         productCategories: state.productCategories.productCategories,
+        carts: state.carts.carts,
+        userInfo: state.auth.userInfo,
+        isAuth: state.auth.isAuth,
     }
 }
 
 const mapDispatchToProps = dispatch => ({
+    signOut: (cb) => dispatch(actions.signOut(cb)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Navbar)

@@ -21,6 +21,7 @@ module.exports.policies = {
 
   FrontendController: {
     '*': true,
+    'getOrders': ['tryAuth'],
   },
 
   AuthController: {
@@ -29,6 +30,6 @@ module.exports.policies = {
 
   UserController: {
     '*': ['tryAuth', 'isAdmin'],
-    'all': ['tryAuth']
+    'all': ['tryAuth'],
   },
 };

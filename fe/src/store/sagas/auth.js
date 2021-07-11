@@ -36,7 +36,7 @@ export function* signInSaga(action) {
 
 export function* signOutSaga(action) {
     try {
-        let result = yield signOut(action.signoutData);
+        let result = yield signOut();
 
         if (result.data) {
             yield put(signOutSuccess(result.data));
@@ -47,6 +47,9 @@ export function* signOutSaga(action) {
             // });
         } else {
             // Toast.fail('Đăng nhập thất bại, vui lòng thử lại.');
+        }
+        if (action.cb) {
+            action.cb();
         }
     } catch (error) {
         // Toast.fail(error.response && error.response.data ? error.response.data : 'Đăng nhập thất bại, vui lòng thử lại.');
@@ -59,6 +62,9 @@ export function* getInfoUserSaga(action) {
 
         if (result.data && result.data.data) {
             yield put(getUserInfoSuccess(result.data.data));
+            if (action.cb) {
+                action.cb();
+            }
         } else {
             yield put(getUserInfoError());
         }

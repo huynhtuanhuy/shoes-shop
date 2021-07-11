@@ -1,7 +1,93 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { Link, withRouter } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 
-export default class Checkout extends Component {
+import * as actions from '../actions';
+import * as networks from '../networks';
+
+const CheckoutSwal = withReactContent(Swal)
+
+class Checkout extends Component {
+    state = {
+        currentStep: 1,
+        formValue: {
+            fullname: '',
+            phone: '',
+            address: '',
+            email: '',
+            password: '',
+        }
+    }
+
+    componentDidMount() {
+        this.props.getCarts();
+    }
+
+    nextStep = async (e) => {
+        e.preventDefault();
+        const { carts } = this.props;
+        const { currentStep, formValue } = this.state;
+        const { fullname, phone, address, email, password } = formValue;
+
+        if (currentStep == 1) {
+            this.setState({ currentStep: 2 });
+        } else {
+            if (!fullname || !phone || !address || !email || !password) {
+                this.setState({ currentStep: 1 });
+                toast.error("Bạn cần điền đầy đủ thông tin!");
+                return;
+            }
+
+            try {
+                const makeOrderResponse = await networks.makeOrders({
+                    fullname,
+                    phone,
+                    address,
+                    email,
+                    password,
+                    carts: carts,
+                });
+    
+                if (makeOrderResponse.data && makeOrderResponse.data.data) {
+                    this.props.updateCarts([], () => {
+                        this.props.getCarts();
+                        CheckoutSwal.fire({
+                            title: 'Đặt hàng thành công!',
+                            icon: 'success',
+                            showDenyButton: false,
+                            showCancelButton: false,
+                        }).then((result) => {
+                            this.props.history.push('/');
+                        });
+                    });
+                } else {
+                    toast.error("Đặt hàng chưa thành công! Vui lòng thử lại.");
+                }
+            } catch (error) {
+                toast.error("Đặt hàng chưa thành công! Vui lòng thử lại.");
+            }
+        }
+    }
+
+    handleChange = (e) => {
+        const { formValue } = this.state;
+        const { name, value } = e.target;
+
+        this.setState({
+            formValue: {
+                ...formValue,
+                [name]: value,
+            }
+        });
+    }
+
     render() {
+        const { carts, loading } = this.props;
+        const { currentStep, formValue } = this.state;
+
         return (
             <div className="checkout-area">
                 <div className="container">
@@ -10,482 +96,137 @@ export default class Checkout extends Component {
                             <div className="location">
                                 <ul>
                                     <li><a href="/" title="go to homepage">Home<span>/</span></a></li>
-                                    <li><strong> checkout</strong></li>
+                                    <li><strong> Thanh toán</strong></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-sm-3">
-                            <div className="product-sidebar">
-                                <div className="sidebar-title">
-                                    <h2>Shopping Options</h2>
-                                </div>
-                                <div className="single-sidebar">
-                                    <div className="single-sidebar-title">
-                                        <h3>Category</h3>
-                                    </div>
-                                    <div className="single-sidebar-content">
-                                        <ul>
-                                            <li><a href="#">Dresses (4)</a></li>
-                                            <li><a href="#">shoes (6)</a></li>
-                                            <li><a href="#">Handbags (1)</a></li>
-                                            <li><a href="#">Clothing (3)</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="single-sidebar">
-                                    <div className="single-sidebar-title">
-                                        <h3>Color</h3>
-                                    </div>
-                                    <div className="single-sidebar-content">
-                                        <ul>
-                                            <li><a href="#">Black (2)</a></li>
-                                            <li><a href="#">Blue (2)</a></li>
-                                            <li><a href="#">Green (4)</a></li>
-                                            <li><a href="#">Grey (2)</a></li>
-                                            <li><a href="#">Red (2)</a></li>
-                                            <li><a href="#">White (2)</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="banner-left">
-                                    <a href="#">
-                                        <img src="/img/product/banner_left.jpg" alt />
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-sm-9">
+                        <div className="col-sm-8 col-sm-offset-2">
                             <div className="checkout-banner hidden-xs">
                                 <a href="#">
                                     <img src="/img/checkout/checkout_banner.jpg" alt />
                                 </a>
                             </div>
                             <div className="checkout-heading">
-                                <h2>Checkout</h2>
+                                <h2>Thanh toán</h2>
                             </div>
                             <div className="checkout-accordion">
                                 <div className="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                                     <div className="panel panel-default">
-                                        <div className="panel-heading" role="tab" id="headingOne">
-                                            <h4 className="panel-title">
-                                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                                    Step 1: Checkout Options
-                                                    <i className="fa fa-caret-down" />
-                                                </a>
-                                            </h4>
-                                        </div>
-                                        <div id="collapseOne" className="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
-                                            <div className="panel-body">
-                                                <div className="row">
-                                                    <div className="col-sm-6">
-                                                        <div className="checkout-collapse">
-                                                            <h3 className="checkout-title">New Customer</h3>
-                                                            <p className="c-title-content">Checkout Options</p>
-                                                            <form action="#">
-                                                                <div className="radio">
-                                                                    <label>
-                                                                        <input type="radio" name="account" defaultValue="register" />Register Account
-                                                                    </label>
-                                                                </div>
-                                                                <div className="radio">
-                                                                    <label>
-                                                                        <input type="radio" name="account" defaultValue="guest" />Guest Checkout
-                                                                    </label>
-                                                                </div>
-                                                                <p>By creating an account you will be able to shop faster, be up to date on an order's status, and keep track of the orders you have previously made.</p>
-                                                                <button type="submit" value="Continue" className="check-button">Continue</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-sm-6">
-                                                        <div className="checkout-collapse">
-                                                            <h3 className="checkout-title">Returning Customer</h3>
-                                                            <p className="c-title-content">I am a returning customer</p>
-                                                            <form action="#">
-                                                                <div className="form-box">
-                                                                    <div className="form-name">
-                                                                        <label>E-mail</label>
-                                                                        <input type="email" />
-                                                                    </div>
-                                                                </div>
-                                                                <div className="form-box">
-                                                                    <div className="form-name">
-                                                                        <label>Password</label>
-                                                                        <input type="password" />
-                                                                    </div>
-                                                                </div>
-                                                                <a href="#">Forgotten Password</a>
-                                                            </form>
-                                                            <button type="submit" value="Continue" className="check-button">Continue</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="panel panel-default">
                                         <div className="panel-heading" role="tab" id="headingTwo">
                                             <h4 className="panel-title">
-                                                <a className="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                                    Step 2: Account &amp; Billing Details
+                                                <a className="collapsed" role="button" onClick={() => this.setState({ currentStep: currentStep == 1 ? 2 : 1 })}>
+                                                    Bước 1: Thông tin giao hàng
                                                     <i className="fa fa-caret-down" />
                                                 </a>
                                             </h4>
                                         </div>
-                                        <div id="collapseTwo" className="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
-                                            <div className="panel-body">
+                                        <div id="collapseTwo" className={`panel-collapse collapse ${currentStep == 1 ? 'in' : ''}`} role="tabpanel" aria-labelledby="headingTwo">
+                                            <form onSubmit={this.nextStep} className="panel-body">
                                                 <div className="row">
                                                     <div className="col-sm-6">
                                                         <div className="account-details">
-                                                            <h4>Your Personal Details</h4>
+                                                            <h4>Thông tin giao hàng</h4>
                                                             <div className="form-box">
                                                                 <div className="form-name">
-                                                                    <label>First Name <em>*</em> </label>
-                                                                    <input type="text" placeholder="First Name" />
+                                                                    <label>Họ tên <em>*</em> </label>
+                                                                    <input type="text" name="fullname" required placeholder="Họ tên" value={formValue.fullname} onChange={this.handleChange} />
                                                                 </div>
                                                             </div>
                                                             <div className="form-box">
                                                                 <div className="form-name">
-                                                                    <label>Last Name <em>*</em> </label>
-                                                                    <input type="text" placeholder="Last Name" />
+                                                                    <label>Số điện thoại <em>*</em> </label>
+                                                                    <input type="text" name="phone" required placeholder="Số điện thoại" value={formValue.phone} onChange={this.handleChange} />
                                                                 </div>
                                                             </div>
                                                             <div className="form-box">
                                                                 <div className="form-name">
-                                                                    <label>E-mail <em>*</em> </label>
-                                                                    <input type="email" placeholder="E-mail" />
+                                                                    <label>Địa chỉ nhận hàng <em>*</em> </label>
+                                                                    <input type="text" name="address" required placeholder="Địa chỉ nhận hàng" value={formValue.address} onChange={this.handleChange} />
                                                                 </div>
-                                                            </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>Telephone <em>*</em> </label>
-                                                                    <input type="text" placeholder="Telephone" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>Fax </label>
-                                                                    <input type="text" placeholder="Fax" />
-                                                                </div>
-                                                            </div>
-                                                            <h4>Your Password</h4>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>Password <em>*</em> </label>
-                                                                    <input type="password" placeholder="Password" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>Password Confirm <em>*</em> </label>
-                                                                    <input type="password" placeholder="Password Confirm" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="checkbox">
-                                                                <input type="checkbox" name="newsletter" />I wish to subscribe to the Malias1 newsletter.
-                                                            </div>
-                                                            <div className="checkbox">
-                                                                <input type="checkbox" defaultChecked name="shipping-address" />My delivery and billing addresses are the same.
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div className="col-sm-6">
-                                                        <div className="checkout-collapse">
-                                                            <h4>Your Address</h4>
+                                                        <div className="account-details">
+                                                            <h4>Thông tin tài khoản</h4>
                                                             <div className="form-box">
                                                                 <div className="form-name">
-                                                                    <label>Company </label>
-                                                                    <input type="text" placeholder="Company" />
+                                                                    <label>Địa chỉ Email <em>*</em> </label>
+                                                                    <input type="email" name="email" required placeholder="Địa chỉ Email" value={formValue.email} onChange={this.handleChange} />
                                                                 </div>
                                                             </div>
                                                             <div className="form-box">
                                                                 <div className="form-name">
-                                                                    <label>Address 1 <em>*</em> </label>
-                                                                    <input type="text" placeholder="Address 1" />
+                                                                    <label>Mật khẩu <em>*</em> </label>
+                                                                    <input type="password" name="password" required placeholder="Mật khẩu" value={formValue.password} onChange={this.handleChange} />
                                                                 </div>
                                                             </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>Address 2 <em>*</em> </label>
-                                                                    <input type="text" placeholder="Address 2" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>City <em>*</em> </label>
-                                                                    <input type="text" placeholder="City" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>Post Code <em>*</em> </label>
-                                                                    <input type="text" placeholder="Post Code" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label> country <em>*</em> </label>
-                                                                    <select>
-                                                                        <option value={1}>---Please select---</option>
-                                                                        <option value={1}>Afghanistan</option>
-                                                                        <option value={1}>Algeria</option>
-                                                                        <option value={1}>American Samoa</option>
-                                                                        <option value={1}>Australia</option>
-                                                                        <option value={1}>Bangladesh</option>
-                                                                        <option value={1}>Belgium</option>
-                                                                        <option value={1}>Bosnia and Herzegovina</option>
-                                                                        <option value={1}>Chile</option>
-                                                                        <option value={1}>China</option>
-                                                                        <option value={1}>Egypt</option>
-                                                                        <option value={1}>Finland</option>
-                                                                        <option value={1}>France</option>
-                                                                        <option value={1}>United State</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label> State/Province </label>
-                                                                    <select>
-                                                                        <option value={1}>---Please select---</option>
-                                                                        <option value={1}>Arizona</option>
-                                                                        <option value={1}>Armed Forces Africa</option>
-                                                                        <option value={1}>California</option>
-                                                                        <option value={1}>Florida</option>
-                                                                        <option value={1}>Indiana</option>
-                                                                        <option value={1}>Marshall Islands</option>
-                                                                        <option value={1}>Minnesota</option>
-                                                                        <option value={1}>New Mexico</option>
-                                                                        <option value={1}>Utah</option>
-                                                                        <option value={1}>Virgin Islands</option>
-                                                                        <option value={1}>West Virginia</option>
-                                                                        <option value={1}>Wyoming</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
+                                                            <br/>
+                                                            <p>Đã có tài khoản? <u><Link to="/login">Đăng nhập</Link></u></p>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div className="privacy-policy">
-                                                    I have read and agree to the
-                                                    <a href="#">Privacy Policy</a>
-                                                    <input type="checkbox" name="agree" />
-                                                    <button type="submit" value="Continue" className="check-button">Continue</button>
+                                                    <button type="submit" value="Continue" className="check-button">Tiếp tục</button>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="panel panel-default">
-                                        <div className="panel-heading" role="tab" id="headingThree">
-                                            <h4 className="panel-title">
-                                                <a className="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                                    Step 3: Delivery Details
-                                                    <i className="fa fa-caret-down" />
-                                                </a>
-                                            </h4>
-                                        </div>
-                                        <div id="collapseThree" className="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
-                                            <div className="panel-body">
-                                                <div className="row">
-                                                    <div className="col-md-12">
-                                                        <div className="delivery-details">
-                                                            <form action="#">
-                                                                <div className="list-style">
-                                                                    <div className="form-name">
-                                                                        <label>First Name <em>*</em> </label>
-                                                                        <input type="text" placeholder="First Name" />
-                                                                    </div>
-                                                                    <div className="form-name">
-                                                                        <label>Last Name <em>*</em> </label>
-                                                                        <input type="text" placeholder="Last Name" />
-                                                                    </div>
-                                                                    <div className="form-name">
-                                                                        <label>Company </label>
-                                                                        <input type="text" placeholder="Company" />
-                                                                    </div>
-                                                                    <div className="form-name">
-                                                                        <label>Address 1 <em>*</em> </label>
-                                                                        <input type="text" placeholder="Address 1" />
-                                                                    </div>
-                                                                    <div className="form-name">
-                                                                        <label>Address 2 <em>*</em> </label>
-                                                                        <input type="text" placeholder="Address 2" />
-                                                                    </div>
-                                                                    <div className="form-name">
-                                                                        <label>City <em>*</em> </label>
-                                                                        <input type="text" placeholder="City" />
-                                                                    </div>
-                                                                    <div className="form-name">
-                                                                        <label>Post Code <em>*</em> </label>
-                                                                        <input type="text" placeholder="Post Code" />
-                                                                    </div>
-                                                                    <div className="form-name">
-                                                                        <label> country <em>*</em> </label>
-                                                                        <select>
-                                                                            <option value={1}>---Please select---</option>
-                                                                            <option value={1}>Afghanistan</option>
-                                                                            <option value={1}>Algeria</option>
-                                                                            <option value={1}>American Samoa</option>
-                                                                            <option value={1}>Australia</option>
-                                                                            <option value={1}>Bangladesh</option>
-                                                                            <option value={1}>Belgium</option>
-                                                                            <option value={1}>Bosnia and Herzegovina</option>
-                                                                            <option value={1}>Chile</option>
-                                                                            <option value={1}>China</option>
-                                                                            <option value={1}>Egypt</option>
-                                                                            <option value={1}>Finland</option>
-                                                                            <option value={1}>France</option>
-                                                                            <option value={1}>United State</option>
-                                                                        </select>
-                                                                    </div>
-                                                                    <div className="form-name">
-                                                                        <label> State/Province </label>
-                                                                        <select>
-                                                                            <option value={1}>---Please select---</option>
-                                                                            <option value={1}>Arizona</option>
-                                                                            <option value={1}>Armed Forces Africa</option>
-                                                                            <option value={1}>California</option>
-                                                                            <option value={1}>Florida</option>
-                                                                            <option value={1}>Indiana</option>
-                                                                            <option value={1}>Marshall Islands</option>
-                                                                            <option value={1}>Minnesota</option>
-                                                                            <option value={1}>New Mexico</option>
-                                                                            <option value={1}>Utah</option>
-                                                                            <option value={1}>Virgin Islands</option>
-                                                                            <option value={1}>West Virginia</option>
-                                                                            <option value={1}>Wyoming</option>
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="panel panel-default">
-                                        <div className="panel-heading" role="tab" id="headingFour">
-                                            <h4 className="panel-title">
-                                                <a className="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                                    Step 4: Delivery Method
-                                                    <i className="fa fa-caret-down" />
-                                                </a>
-                                            </h4>
-                                        </div>
-                                        <div id="collapseFour" className="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
-                                            <div className="panel-body">
-                                                <div className="delivery-method">
-                                                    <p>Please select the preferred shipping method to use on this order.</p>
-                                                    <p> <strong>Flat Rate</strong> </p>
-                                                    <div className="radio">
-                                                        <input type="radio" defaultChecked defaultValue="shipping-method" />Flat Shipping Rate - $5.00
-                                                    </div>
-                                                    <p> <strong> Add Comments About Your Order</strong></p>
-                                                    <p> <textarea name="comment" rows={8} defaultValue={""} /> </p>
-                                                    <button type="submit" value="Continue" className="check-button">Continue</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="panel panel-default">
-                                        <div className="panel-heading" role="tab" id="headingFive">
-                                            <h4 className="panel-title">
-                                                <a className="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                                                    Step 5: Payment Method
-                                                    <i className="fa fa-caret-down" />
-                                                </a>
-                                            </h4>
-                                        </div>
-                                        <div id="collapseFive" className="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
-                                            <div className="panel-body">
-                                                <div className="patment-method">
-                                                    <p>Please select the preferred payment method to use on this order.</p>
-                                                    <div className="radio">
-                                                        <input type="radio" defaultChecked defaultValue="shipping-method" />Cash On Delivery
-                                                    </div>
-                                                    <p> <strong> Add Comments About Your Order</strong></p>
-                                                    <p> <textarea name="comment" rows={8} defaultValue={""} /> </p>
-                                                    <div className="privacy-policy">
-                                                        I have read and agree to the
-                                                        <a href="#">Privacy Policy</a>
-                                                        <input type="checkbox" name="agree" />
-                                                        <button type="submit" value="Continue" className="check-button">Continue</button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            </form>
                                         </div>
                                     </div>
                                     <div className="panel panel-default">
                                         <div className="panel-heading" role="tab" id="headingSix">
                                             <h4 className="panel-title">
-                                                <a className="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
-                                                    Step 6: Confirm Order
+                                                <a className="collapsed" role="button" onClick={() => this.setState({ currentStep: currentStep == 2 ? 1 : 2 })}>
+                                                    Bước 2: Xác nhận đơn hàng
                                                     <i className="fa fa-caret-down" />
                                                 </a>
                                             </h4>
                                         </div>
-                                        <div id="collapseSix" className="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
-                                            <div className="panel-body">
+                                        <div id="collapseSix" className={`panel-collapse collapse ${currentStep == 2 ? 'in' : ''}`} role="tabpanel" aria-labelledby="headingSix">
+                                            <form onSubmit={this.nextStep} className="panel-body">
                                                 <div className="confirm-order">
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered table-hover">
                                                             <thead>
                                                                 <tr>
-                                                                    <th>Product Name</th>
-                                                                    <th>Model</th>
-                                                                    <th>Quantity</th>
-                                                                    <th>Unit Price</th>
-                                                                    <th>Total</th>
+                                                                    <th>Tên sản phẩm</th>
+                                                                    <th>Số lượng</th>
+                                                                    <th>Giá</th>
+                                                                    <th>Tổng tiền</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                <tr>
-                                                                    <td>
-                                                                        <a href="#">More-Or-Less</a>
-                                                                    </td>
-                                                                    <td>Product 14</td>
-                                                                    <td>2</td>
-                                                                    <td>$100.00</td>
-                                                                    <td>$200.00</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>
-                                                                        <a href="#">Aliquam Consequat</a>
-                                                                    </td>
-                                                                    <td>Product 14</td>
-                                                                    <td>1</td>
-                                                                    <td>$90.00</td>
-                                                                    <td>$90.00</td>
-                                                                </tr>
+                                                                {carts && carts.length > 0 ? (
+                                                                    carts.map(cartItem => (
+                                                                        <tr key={cartItem.id}>
+                                                                            <td>
+                                                                                <Link href="#">{
+                                                                                    cartItem.product.name
+                                                                                }</Link>
+                                                                            </td>
+                                                                            <td>{cartItem.quantity}</td>
+                                                                            <td>{cartItem.price}</td>
+                                                                            <td>{Number(cartItem.quantity * cartItem.price).toLocaleString()} VNĐ</td>
+                                                                        </tr>
+                                                                    ))
+                                                                ) : ''}
                                                             </tbody>
                                                             <tfoot>
                                                                 <tr>
-                                                                    <td className="text-right" colSpan={4}>
-                                                                        <strong>Sub-Total:</strong>
+                                                                    <td className="text-right" colSpan={3}>
+                                                                        <strong>Tổng cộng:</strong>
                                                                     </td>
-                                                                    <td>$290.00</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td className="text-right" colSpan={4}>
-                                                                        <strong>Flat Shipping Rate:</strong>
+                                                                    <td>
+                                                                        {Number(carts && carts.length > 0 ? carts.reduce((total, cartItem) => total + cartItem.quantity * cartItem.price, 0) : 0).toLocaleString()} VNĐ
                                                                     </td>
-                                                                    <td>$5.00</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td className="text-right" colSpan={4}>
-                                                                        <strong>Flat Shipping Rate:</strong>
-                                                                    </td>
-                                                                    <td>$5.00</td>
                                                                 </tr>
                                                             </tfoot>
                                                         </table>
                                                     </div>
-                                                    <button type="submit" value="Continue" className="check-button">Confirm Order</button>
+                                                    <button disabled={loading} type="submit" value="Continue" className="check-button">Xác nhận đơn hàng</button>
                                                 </div>
-                                            </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -498,3 +239,17 @@ export default class Checkout extends Component {
         )
     }
 }
+
+const mapStateToProps = (state) => {
+    return {
+        loading: state.common.loading,
+        carts: state.carts.carts,
+    }
+}
+
+const mapDispatchToProps = dispatch => ({
+    updateCarts: (carts, cb) => dispatch(actions.updateCarts(carts, cb)),
+    getCarts: (params) => dispatch(actions.getCarts(params)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Checkout))

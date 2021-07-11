@@ -58,9 +58,18 @@ module.exports.routes = {
   'GET /api/statistics/income': 'StatisticController.totalIncome', 
   'GET /api/statistics/inventory': 'StatisticController.inventory', 
 
-  'GET /api/fe/categories/options': 'FrontendController.findCategoryOptions', 
+  'GET /api/fe/categories/options': 'FrontendController.findCategoryOptions',
   'GET /api/fe/categories': 'FrontendController.findCategories', 
   'GET /api/fe/categories/:id': 'FrontendController.findOneCategory', 
+  'GET /api/fe/products/top-featured': 'FrontendController.topFeaturedProducts',
+  'GET /api/fe/products/top-view': 'FrontendController.topViewProducts',
+  'GET /api/fe/products/top-new': 'FrontendController.topNewProducts',
+  'GET /api/fe/products/colors': 'FrontendController.productColors',
+  'GET /api/fe/products/sizes': 'FrontendController.productSizes',
+  'GET /api/fe/products': 'FrontendController.filterProducts',
+  'GET /api/fe/products/:productSlug/by-slug': 'FrontendController.getProductBySlug',
+  'GET /api/fe/orders': 'FrontendController.getOrders',
+  'POST /api/fe/orders': 'FrontendController.createOrder',
 
   'POST /api/upload': 'FileController.upload',
 

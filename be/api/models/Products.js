@@ -28,6 +28,10 @@ module.exports = {
       type: 'number',
       defaultsTo: 0
     },
+    sold: {
+      type: 'number',
+      defaultsTo: 0
+    },
     is_new: {
       type: 'boolean',
       defaultsTo: false

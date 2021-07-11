@@ -1,25 +1,19 @@
 import { axios } from './index.js';
 
-const ORDERS_URL = '/orders'
+const ORDERS_URL = '/fe/orders'
 
 export function getOrders (params) {
     return axios.get(
         `${ORDERS_URL}`,
         {
             params: params || {}
-        }
+        },
     );
 }
 
-export function getSingleOrder (id) {
-    return axios.get(
-        `${ORDERS_URL}/${id}`,
-    );
-}
-
-export function updateOrder (id, order) {
-    return axios.put(
-        `${ORDERS_URL}/${id}`,
+export function makeOrders (order) {
+    return axios.post(
+        `${ORDERS_URL}`,
         order,
     );
 }
