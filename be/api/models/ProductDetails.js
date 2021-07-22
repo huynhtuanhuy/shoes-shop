@@ -24,6 +24,11 @@ module.exports = {
       collection: 'ProductSizeDetails',
       via: 'product_detail_id',
     },
+
+    sales: {
+      collection: 'ProductDetailSales',
+      via: 'product_detail_id',
+    },
   },
   schema: true,
   tableName: 'product_details'

@@ -23,6 +23,7 @@ module.exports = {
     },
     description: {
       type: 'string',
+      columnType: 'longtext',
     },
     views: {
       type: 'number',
@@ -39,6 +40,9 @@ module.exports = {
     is_disable: {
       type: 'boolean',
       defaultsTo: false
+    },
+    category_parent: {
+      model: 'ProductCategories',
     },
     categories: {
       collection: 'ProductCategories',

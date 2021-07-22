@@ -72,6 +72,7 @@ class Navbar extends Component {
                                                 {isAuth ? (
                                                     <ul>
                                                         <li><Link to="/my-account">Thông tin cá nhân</Link></li>
+                                                        <li><Link to="/favorites">Danh sách yêu thích</Link></li>
                                                         <li><Link to="/my-order">Lịch sử đặt hàng</Link></li>
                                                         <li><Link to="#" onClick={this.signOut}>Đăng xuất</Link></li>
                                                     </ul>

@@ -29,13 +29,14 @@ class Checkout extends Component {
     nextStep = async (e) => {
         e.preventDefault();
         const { carts } = this.props;
+        const { isAuth, userInfo } = this.props;
         const { currentStep, formValue } = this.state;
         const { fullname, phone, address, email, password } = formValue;
 
         if (currentStep == 1) {
             this.setState({ currentStep: 2 });
         } else {
-            if (!fullname || !phone || !address || !email || !password) {
+            if (!isAuth && (!fullname || !phone || !address || !email || !password)) {
                 this.setState({ currentStep: 1 });
                 toast.error("Bạn cần điền đầy đủ thông tin!");
                 return;
@@ -43,16 +44,16 @@ class Checkout extends Component {
 
             try {
                 const makeOrderResponse = await networks.makeOrders({
-                    fullname,
-                    phone,
-                    address,
+                    fullname: fullname || userInfo.fullname,
+                    phone: phone || userInfo.phone,
+                    address: address || userInfo.address,
                     email,
                     password,
                     carts: carts,
                 });
     
                 if (makeOrderResponse.data && makeOrderResponse.data.data) {
-                    this.props.updateCarts([], () => {
+                    this.props.deleteAllCart(() => {
                         this.props.getCarts();
                         CheckoutSwal.fire({
                             title: 'Đặt hàng thành công!',
@@ -85,7 +86,7 @@ class Checkout extends Component {
     }
 
     render() {
-        const { carts, loading } = this.props;
+        const { carts, loading, isAuth, userInfo } = this.props;
         const { currentStep, formValue } = this.state;
 
         return (
@@ -131,42 +132,44 @@ class Checkout extends Component {
                                                             <div className="form-box">
                                                                 <div className="form-name">
                                                                     <label>Họ tên <em>*</em> </label>
-                                                                    <input type="text" name="fullname" required placeholder="Họ tên" value={formValue.fullname} onChange={this.handleChange} />
+                                                                    <input type="text" name="fullname" required placeholder="Họ tên" value={formValue.fullname || userInfo.fullname} onChange={this.handleChange} />
                                                                 </div>
                                                             </div>
                                                             <div className="form-box">
                                                                 <div className="form-name">
                                                                     <label>Số điện thoại <em>*</em> </label>
-                                                                    <input type="text" name="phone" required placeholder="Số điện thoại" value={formValue.phone} onChange={this.handleChange} />
+                                                                    <input type="text" name="phone" required placeholder="Số điện thoại" value={formValue.phone || userInfo.phone} onChange={this.handleChange} />
                                                                 </div>
                                                             </div>
                                                             <div className="form-box">
                                                                 <div className="form-name">
                                                                     <label>Địa chỉ nhận hàng <em>*</em> </label>
-                                                                    <input type="text" name="address" required placeholder="Địa chỉ nhận hàng" value={formValue.address} onChange={this.handleChange} />
+                                                                    <input type="text" name="address" required placeholder="Địa chỉ nhận hàng" value={formValue.address || userInfo.address} onChange={this.handleChange} />
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="col-sm-6">
-                                                        <div className="account-details">
-                                                            <h4>Thông tin tài khoản</h4>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>Địa chỉ Email <em>*</em> </label>
-                                                                    <input type="email" name="email" required placeholder="Địa chỉ Email" value={formValue.email} onChange={this.handleChange} />
+                                                    {!isAuth && (
+                                                        <div className="col-sm-6">
+                                                            <div className="account-details">
+                                                                <h4>Thông tin tài khoản</h4>
+                                                                <div className="form-box">
+                                                                    <div className="form-name">
+                                                                        <label>Địa chỉ Email <em>*</em> </label>
+                                                                        <input type="email" name="email" required placeholder="Địa chỉ Email" value={formValue.email} onChange={this.handleChange} />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div className="form-box">
-                                                                <div className="form-name">
-                                                                    <label>Mật khẩu <em>*</em> </label>
-                                                                    <input type="password" name="password" required placeholder="Mật khẩu" value={formValue.password} onChange={this.handleChange} />
+                                                                <div className="form-box">
+                                                                    <div className="form-name">
+                                                                        <label>Mật khẩu <em>*</em> </label>
+                                                                        <input type="password" name="password" required placeholder="Mật khẩu" value={formValue.password} onChange={this.handleChange} />
+                                                                    </div>
                                                                 </div>
+                                                                <br/>
+                                                                <p>Đã có tài khoản? <u><Link to="/login">Đăng nhập</Link></u></p>
                                                             </div>
-                                                            <br/>
-                                                            <p>Đã có tài khoản? <u><Link to="/login">Đăng nhập</Link></u></p>
                                                         </div>
-                                                    </div>
+                                                    )}
                                                 </div>
                                                 <div className="privacy-policy">
                                                     <button type="submit" value="Continue" className="check-button">Tiếp tục</button>
@@ -206,8 +209,19 @@ class Checkout extends Component {
                                                                                 }</Link>
                                                                             </td>
                                                                             <td>{cartItem.quantity}</td>
-                                                                            <td>{cartItem.price}</td>
-                                                                            <td>{Number(cartItem.quantity * cartItem.price).toLocaleString()} VNĐ</td>
+                                                                            <td className="unit-price-checkout">
+                                                                                <div>
+                                                                                    <span className={cartItem.sale_price ? 'old-price' : ''}>
+                                                                                        {Number(cartItem.price || 0).toLocaleString()} VND
+                                                                                    </span>
+                                                                                    {cartItem.sale_price ? (
+                                                                                        <>
+                                                                                            <span>{Number(cartItem.sale_price || 0).toLocaleString()} VND</span>
+                                                                                        </>
+                                                                                    ) : ''}
+                                                                                </div>
+                                                                            </td>
+                                                                            <td>{Number(cartItem.quantity * (cartItem.sale_price || cartItem.price || 0)).toLocaleString()} VND</td>
                                                                         </tr>
                                                                     ))
                                                                 ) : ''}
@@ -218,7 +232,7 @@ class Checkout extends Component {
                                                                         <strong>Tổng cộng:</strong>
                                                                     </td>
                                                                     <td>
-                                                                        {Number(carts && carts.length > 0 ? carts.reduce((total, cartItem) => total + cartItem.quantity * cartItem.price, 0) : 0).toLocaleString()} VNĐ
+                                                                        {Number(carts && carts.length > 0 ? carts.reduce((total, cartItem) => total + cartItem.quantity * (cartItem.sale_price || cartItem.price || 0), 0) : 0).toLocaleString()} VND
                                                                     </td>
                                                                 </tr>
                                                             </tfoot>
@@ -244,11 +258,13 @@ const mapStateToProps = (state) => {
     return {
         loading: state.common.loading,
         carts: state.carts.carts,
+        userInfo: state.auth.userInfo,
+        isAuth: state.auth.isAuth,
     }
 }
 
 const mapDispatchToProps = dispatch => ({
-    updateCarts: (carts, cb) => dispatch(actions.updateCarts(carts, cb)),
+    deleteAllCart: (cb) => dispatch(actions.deleteAllCart(cb)),
     getCarts: (params) => dispatch(actions.getCarts(params)),
 });
 

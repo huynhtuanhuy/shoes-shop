@@ -10,12 +10,15 @@ import {
     getTopFeaturedProductsError,
     getTopViewProductsSuccess,
     getTopViewProductsError,
+    getTopSalesProductsSuccess,
+    getTopSalesProductsError,
 } from '../../actions';
 import {
     getProducts,
     getTopFeaturedProducts,
     getTopViewProducts,
     getTopNewProducts,
+    getTopSalesProducts,
 } from '../../networks';
 
 export function* getProductsSaga(action) {
@@ -79,5 +82,21 @@ export function* getTopViewProductsSaga(action) {
     } catch (error) {
         toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
         yield put(getTopViewProductsError());
+    }
+}
+
+export function* getTopSalesProductsSaga(action) {
+    try {
+        let result = yield getTopSalesProducts(action.params);
+
+        if (result.data && result.data.data) {
+            yield put(getTopSalesProductsSuccess(result.data.data));
+        } else {
+            toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+            yield put(getTopSalesProductsError());
+        }
+    } catch (error) {
+        toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        yield put(getTopSalesProductsError());
     }
 }

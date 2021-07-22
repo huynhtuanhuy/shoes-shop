@@ -11,6 +11,7 @@ class Home extends Component {
         this.props.getTopNewProducts();
         this.props.getTopFeaturedProducts();
         this.props.getTopViewProducts();
+        this.props.getTopSalesProducts();
 
         if (window.$) {
             window.$('#nivoslider').nivoSlider({
@@ -88,6 +89,19 @@ class Home extends Component {
                     itemsMobile: [479, 1],
                 });
             }
+            if (this.props.topSalesProducts && this.props.topSalesProducts.length > 0) {
+                window.$(".sales-product-slider").owlCarousel({
+                    autoPlay: false,
+                    slideSpeed: 2000,
+                    pagination: false,
+                    navigation: true,
+                    items: 4,
+                    itemsDesktop: [1199, 4],
+                    itemsDesktopSmall: [980, 3],
+                    itemsTablet: [768, 2],
+                    itemsMobile: [479, 1],
+                });
+            }
         }
     }
 
@@ -137,6 +151,21 @@ class Home extends Component {
                 });
             }
         }
+        if ((!prevProps.topSalesProducts && this.props.topSalesProducts && this.props.topSalesProducts.length > 0) || (prevProps.topSalesProducts && this.props.topSalesProducts && prevProps.topSalesProducts.length != this.props.topSalesProducts.length)) {
+            if (window.$) {
+                window.$(".sales-product-slider").owlCarousel({
+                    autoPlay: false,
+                    slideSpeed: 2000,
+                    pagination: false,
+                    navigation: true,
+                    items: 4,
+                    itemsDesktop: [1199, 4],
+                    itemsDesktopSmall: [980, 3],
+                    itemsTablet: [768, 2],
+                    itemsMobile: [479, 1],
+                });
+            }
+        }
     }
 
     renderProduct = (product) => {
@@ -150,6 +179,13 @@ class Home extends Component {
                             </div>
                         )
                     }
+                    {
+                        product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] && (
+                            <div className="level-pro-sale">
+                                <span>SP Giảm giá</span>
+                            </div>
+                        )
+                    }
                     <div className="product-img">
                         <Link to={`/product/${product.slug}`}>
                             <img src={product.images && product.images[0] ? `${baseUrl}/${product.images[0].image_path}` : "/img/product/1.png"} alt className="primary-img" />
@@ -160,7 +196,13 @@ class Home extends Component {
                         <Link to={`/product/${product.slug}`}>{product.name}</Link>
                     </div>
                     <div className="price-rating">
-                        <span>{product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VNĐ` : '0 VNĐ'}</span>
+                        <span className={product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? 'old-price' : ''}>
+                            {product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VND` : '0 VND'}
+                        </span>
+                        <br/>
+                        {product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? (
+                            <span>{Number(product.product_details[0].sales[0].sale_price).toLocaleString()} VND</span>
+                        ) : <span>&nbsp;</span>}
                     </div>
                     <div className="actions text-center">
                         <Link to={`/product/${product.slug}`}>
@@ -173,7 +215,7 @@ class Home extends Component {
     }
 
     render() {
-        const { topFeaturedProducts, topNewProducts, topViewProducts } = this.props;
+        const { topFeaturedProducts, topNewProducts, topViewProducts, topSalesProducts } = this.props;
 
         return (
             <>
@@ -224,7 +266,23 @@ class Home extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="new-product-area">
+                    <div className="sales-product-area" style={{ marginTop: 25 }}>
+                        <div className="container">
+                            <div className="row">
+                                <div className="col-md-12">
+                                    <div className="section-heading">
+                                        <h2>Sản phẩm đang giảm giá</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="row">
+                                <div className="sales-product-slider">
+                                    {topSalesProducts && topSalesProducts.length > 0 ? topSalesProducts.map(product => this.renderProduct(product)) : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="new-product-area" style={{ marginTop: 25 }}>
                         <div className="container">
                             <div className="row">
                                 <div className="col-md-12">
@@ -240,7 +298,7 @@ class Home extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="view-products-area">
+                    <div className="view-products-area" style={{ marginTop: 25 }}>
                         <div className="container">
                             <div className="row">
                                 <div className="col-md-12">
@@ -310,11 +368,13 @@ const mapStateToProps = (state) => {
         topViewProducts: state.products.topViewProducts,
         topNewProducts: state.products.topNewProducts,
         topFeaturedProducts: state.products.topFeaturedProducts,
+        topSalesProducts: state.products.topSalesProducts,
     }
 }
 
 const mapDispatchToProps = dispatch => ({
     getTopNewProducts: (params) => dispatch(actions.getTopNewProducts(params)),
+    getTopSalesProducts: (params) => dispatch(actions.getTopSalesProducts(params)),
     getTopFeaturedProducts: (params) => dispatch(actions.getTopFeaturedProducts(params)),
     getTopViewProducts: (params) => dispatch(actions.getTopViewProducts(params)),
 });

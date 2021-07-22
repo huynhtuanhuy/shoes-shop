@@ -10,6 +10,7 @@ import {
   watchSizes,
   watchCarts,
   watchOrders,
+  watchFavoriteProducts,
 } from './sagas';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -21,6 +22,7 @@ const store = createStore(
 
 sagaMiddleware.run(watchAuth);
 sagaMiddleware.run(watchProductCategories);
+sagaMiddleware.run(watchFavoriteProducts);
 sagaMiddleware.run(watchProducts);
 sagaMiddleware.run(watchColors);
 sagaMiddleware.run(watchSizes);

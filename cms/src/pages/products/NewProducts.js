@@ -37,11 +37,11 @@ class NewProducts extends Component {
             categories: [],
             product_details: [],
             images: [],
+            category_parent: '',
         },
         categoryOptions: [],
         colorOptions: [],
         sizeOptions: [],
-        currentParentCategoryId: null,
     }
 
     async componentDidMount() {
@@ -68,10 +68,14 @@ class NewProducts extends Component {
                         })),
                     };
                 });
-                if (parent[0] && parent[0].id) {
-                    this.setState({ currentParentCategoryId: parent[0].id });
-                }
-                this.setState({ categoryOptions: parent });
+                this.setState({ categoryOptions: parent }, () => {
+                    if (parent[0] && parent[0].value) {
+                        this.setState({ formData: {
+                            ...this.state.formData,
+                            category_parent: parent[0].value,
+                        } });
+                    }
+                });
             }
         } catch (error) {
 
@@ -84,6 +88,10 @@ class NewProducts extends Component {
 
         const newFormData = { ...formData };
         _.set(newFormData, name, value);
+
+        if(name == 'category_parent') {
+            _.set(newFormData, 'categories', []);
+        }
 
         this.setState({
             formData: newFormData
@@ -127,7 +135,7 @@ class NewProducts extends Component {
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        const { name, sku, description, is_new, is_disable, categories, product_details, images } = this.state.formData;
+        const { name, sku, description, is_new, is_disable, categories, product_details, images, category_parent } = this.state.formData;
 
         const formData = new FormData();
         for (let i = 0; i < images.length; i++) {
@@ -141,7 +149,7 @@ class NewProducts extends Component {
             imageUrls = uploadImageResponse.data.data.urls;
         }
 
-        this.props.createProduct({ name, sku, description, is_new, is_disable, categories, product_details, images: imageUrls }, () => {
+        this.props.createProduct({ name, sku, description, is_new, is_disable, categories, product_details, images: imageUrls, category_parent }, () => {
             this.props.history.push('/products');
         });
     }
@@ -226,10 +234,10 @@ class NewProducts extends Component {
 
     render() {
         const { loading } = this.props;
-        const { categoryOptions, currentParentCategoryId, colorOptions, sizeOptions } = this.state;
-        const { name, sku, description, is_new, is_disable, categories, product_details, images } = this.state.formData;
+        const { categoryOptions, colorOptions, sizeOptions } = this.state;
+        const { name, sku, description, is_new, is_disable, categories, product_details, images, category_parent } = this.state.formData;
 
-        const currentParentCategory = categoryOptions.filter(item => item.value == currentParentCategoryId)[0] || categoryOptions[0];
+        const currentParentCategory = categoryOptions.filter(item => item.value == category_parent)[0] || categoryOptions[0];
         const _categoryOptions = currentParentCategory && currentParentCategory.children || [];
 
         return (
@@ -250,10 +258,8 @@ class NewProducts extends Component {
                                     <CInput value={sku} onChange={this.handleChange} id="sku" name="sku" placeholder="Nhập mã sản phẩm" />
                                 </CFormGroup> */}
                                 <CFormGroup>
-                                    <CLabel htmlFor="categories">Danh mục sản phẩm:</CLabel>
-                                    <CSelect custom value={currentParentCategoryId} onChange={(e) => {
-                                        this.setState({ currentParentCategoryId: e.target.value });
-                                    }} className="mb-3">
+                                    <CLabel htmlFor="category_parent">Danh mục sản phẩm:</CLabel>
+                                    <CSelect custom value={category_parent} onChange={this.handleChange} id="category_parent" name="category_parent" placeholder="Chọn danh mục sản phẩm" className="mb-3">
                                         {categoryOptions.map(parentOption => <option key={parentOption.value} value={parentOption.value}>{parentOption.label}</option>)}
                                     </CSelect>
                                     <Select

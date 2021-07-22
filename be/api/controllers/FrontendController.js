@@ -6,6 +6,7 @@
  */
  const slug = require("slug");
  const bcrypt = require('bcrypt');
+ const moment = require('moment');
 
  module.exports = {
     getOrders: async (req, res) => {
@@ -17,7 +18,7 @@
             });
             const orderData = await Orders.find({
                 user_id: req.session.userInfo.id,
-            }).limit(Number(perPage)).skip((Number(page) - 1) * Number(perPage)).populate('order_product_details');
+            }).sort('created_at DESC').limit(Number(perPage)).skip((Number(page) - 1) * Number(perPage)).populate('order_product_details');
 
             res.json({
                 success: 1,
@@ -42,7 +43,7 @@
     createOrder: async (req, res) => {
         const { fullname, phone, address, email, password, carts } = req.body;
 
-        if (!fullname || !phone || !address || !email || !password || !carts || carts.length == 0) {
+        if (!fullname || !phone || !address || !carts || carts.length == 0) {
             return res.status(400).json({
                 success: 0,
                 data: null,
@@ -51,8 +52,8 @@
         }
 
         try {
-            let userFound = await Users.findOne({ username: email });
-            if (!userFound || !userFound.id) {
+            let userFound = await Users.findOne({ username: email || (req.session && req.session.userInfo && req.session.userInfo.username || null) });
+            if ((!userFound || !userFound.id) && email && password) {
                 userFound = await Users.create({
                     fullname,
                     phone,
@@ -64,14 +65,22 @@
                 }).fetch();
             }
 
+            if ((!userFound || !userFound.id)) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Người dùng không tồn tại!'
+                });
+            }
+
             const orderCreated = await Orders.create({
                 user_id: userFound.id,
                 customer_fullname: fullname,
                 customer_phone: phone,
-                customer_email: email,
+                customer_email: email || userFound.email,
                 customer_address: address,
                 status: 'pending',
-                total: carts.reduce((total, cartItem) => total + cartItem.quantity*cartItem.price, 0),
+                total: carts.reduce((total, cartItem) => total + cartItem.quantity*(cartItem.sale_price || cartItem.price || 0), 0),
             }).fetch();
 
             for (let i = 0; i < carts.length; i++) {
@@ -82,7 +91,7 @@
                     product_size_detail_id: cartItem.productSizeDetail.id,
                     quantity: cartItem.quantity,
                     price: cartItem.price,
-                    sale_price: cartItem.price,
+                    sale_price: cartItem.sale_price,
                 });
             }
 
@@ -117,7 +126,7 @@
 
             const productDetails = await ProductDetails.find({
                 id: productFound.product_details.map(item => item.id)
-            }).populate('color_id').populate('sizes');
+            }).populate('color_id').populate('sizes').populate('sales');
 
             const productSizeDetails = await ProductSizeDetails.find({
                 id: productDetails.reduce((total, item) => [
@@ -125,19 +134,33 @@
                     ...item.sizes.map(size => size.id),
                 ], [])
             }).populate('size_id')
+
+            let productFavorite = null;
+            if (req.session && req.session.userInfo && req.session.userInfo.id) {
+                productFavorite = await UserFavoriteProducts.findOne({
+                    product_id: productFound.id,
+                    user_id: req.session.userInfo.id,
+                });
+            }
             
+            const now = moment().valueOf();
+
             res.json({
                 success: 1,
                 data: {
                     ...productFound,
-                    product_details: productDetails.map(item => {
+                    is_favorite: productFavorite && productFavorite.id ? true : false,
+                    product_details: productDetails.filter(productDetail => productDetail.product_id == productFound.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
                         return {
-                            ...item,
+                            ...productDetail,
+                            sales: productDetail.sales
+                                .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf()),
                             sizes: productSizeDetails.filter(_item => {
-                                return item.sizes.map(size => size.id).includes(_item.id);
+                                return productDetail.sizes.map(size => size.id).includes(_item.id);
                             }),
-                        };
-                    }),
+                        }
+                    })
                 },
                 message: '',
             });
@@ -153,6 +176,7 @@
     filterProducts: async (req, res) => {
         const { page = 1, perPage = 10, sorted = '', filtered = '' } = req.query;
         try {
+            let category_parent_slug = null;
             let category = null;
             let color = null;
             let sizes = [];
@@ -161,6 +185,7 @@
             try {
                 const filteredParser = JSON.parse(filtered);
 
+                category_parent_slug = filteredParser.category_parent_slug;
                 category = filteredParser.category;
                 color = filteredParser.color;
                 sizes = filteredParser.sizes;
@@ -180,10 +205,8 @@
             if (color) {
                 productDetailQuery.color_id = color;
             }
-            console.log(productDetailQuery);
 
             const productDetails = await ProductDetails.find(productDetailQuery);
-            console.log(productDetails.map(item => item.product_id));
 
             const productCategoryQuery = {
                 product_id: productDetails.map(item => item.product_id),
@@ -195,17 +218,23 @@
 
             const productCategories = await ProductCategories.find(productCategoryQuery);
 
-            const total = await Products.count({
-                id: productCategories.map(item => item.product_id),
-            });
-            const productData = await Products.find({
-                id: productCategories.map(item => item.product_id),
-            })
-            .limit(Number(perPage))
-            .skip((Number(page) - 1) * Number(perPage))
-            .sort(sorted)
-            .populate('product_details')
-            .populate('images');
+            const productQuery = {};
+
+            if (category) {
+                productQuery.id = productCategories.map(item => item.product_id);
+            } else if (category_parent_slug) {
+                const categoryFound = await Categories.findOne({ slug: category_parent_slug });
+                productQuery.category_parent = categoryFound && categoryFound.id || null;
+            }
+            console.log(productQuery)
+
+            const total = await Products.count(productQuery);
+            const productData = await Products.find(productQuery)
+                .limit(Number(perPage))
+                .skip((Number(page) - 1) * Number(perPage))
+                .sort(sorted)
+                .populate('product_details')
+                .populate('images');
 
             res.json({
                 success: 1,
@@ -263,17 +292,96 @@
             });
         }
     },
-    topFeaturedProducts: async (req, res) => {
+    topSalesProducts: async (req, res) => {
         try {
-            const productData = await Products.find({ is_disable: false })
+            const productSaleData = await ProductDetailSales.find({})
+                .sort([{ created_at: 'DESC' }]);
+
+            const productIds = [];
+
+            for (let i = 0; i < productSaleData.length; i++) {
+                if (productSaleData[i] && productSaleData[i].product_id && !productIds.includes(productSaleData[i].product_id)) {
+                    productIds.push(productSaleData[i].product_id);
+                }
+            }
+
+            const productData = await Products.find({ is_disable: false, id: productIds })
                 .limit(10)
                 .sort([{ sold: 'DESC' }])
                 .populate('product_details')
                 .populate('images');
 
+            const productDetails = await ProductDetails.find({
+                id: productData.reduce((total, product) => {
+                    return [
+                        ...total,
+                        ...product.product_details.map(item => item.id)
+                    ];
+                }, [])
+            }).populate('color_id').populate('sizes').populate('sales');
+
+            const now = moment().valueOf();
+
             res.json({
                 success: 1,
-                data: productData,
+                data: productData.map(product => {
+                    return {
+                        ...product,
+                        product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                            return {
+                                ...productDetail,
+                                sales: productDetail.sales
+                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                            }
+                        })
+                    }
+                }),
+                message: '',
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: 0,
+                data: null,
+                message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
+            });
+        }
+    },
+    topFeaturedProducts: async (req, res) => {
+        try {
+            const productData = await Products.find({ is_disable: false, sold: { '>': 0 } })
+                .limit(10)
+                .sort([{ sold: 'DESC' }])
+                .populate('product_details')
+                .populate('images');
+
+            const productDetails = await ProductDetails.find({
+                id: productData.reduce((total, product) => {
+                    return [
+                        ...total,
+                        ...product.product_details.map(item => item.id)
+                    ];
+                }, [])
+            }).populate('color_id').populate('sizes').populate('sales');
+
+            const now = moment().valueOf();
+
+            res.json({
+                success: 1,
+                data: productData.map(product => {
+                    return {
+                        ...product,
+                        product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                            return {
+                                ...productDetail,
+                                sales: productDetail.sales
+                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                            }
+                        })
+                    }
+                }),
                 message: '',
             });
         } catch (error) {
@@ -293,9 +401,32 @@
                 .populate('product_details')
                 .populate('images');
 
+            const productDetails = await ProductDetails.find({
+                id: productData.reduce((total, product) => {
+                    return [
+                        ...total,
+                        ...product.product_details.map(item => item.id)
+                    ];
+                }, [])
+            }).populate('color_id').populate('sizes').populate('sales');
+
+            const now = moment().valueOf();
+
             res.json({
                 success: 1,
-                data: productData,
+                data: productData.map(product => {
+                    return {
+                        ...product,
+                        product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                            return {
+                                ...productDetail,
+                                sales: productDetail.sales
+                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                            }
+                        })
+                    }
+                }),
                 message: '',
             });
         } catch (error) {
@@ -315,9 +446,32 @@
                 .populate('product_details')
                 .populate('images');
 
+            const productDetails = await ProductDetails.find({
+                id: productData.reduce((total, product) => {
+                    return [
+                        ...total,
+                        ...product.product_details.map(item => item.id)
+                    ];
+                }, [])
+            }).populate('color_id').populate('sizes').populate('sales');
+
+            const now = moment().valueOf();
+
             res.json({
                 success: 1,
-                data: productData,
+                data: productData.map(product => {
+                    return {
+                        ...product,
+                        product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                            return {
+                                ...productDetail,
+                                sales: productDetail.sales
+                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                            }
+                        })
+                    }
+                }),
                 message: '',
             });
         } catch (error) {

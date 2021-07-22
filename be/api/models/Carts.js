@@ -7,8 +7,13 @@
 
 module.exports = {
   attributes: {
-    user_id: {
-      model: 'Users',
+    cart_id: {
+      type: 'string',
+      required: true,
+    },
+
+    product_id: {
+      model: 'Products',
     },
 
     product_detail_id: {

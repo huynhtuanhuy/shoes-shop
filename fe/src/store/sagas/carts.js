@@ -6,28 +6,93 @@ import {
     getCartsError,
     toggleLoading,
 } from '../../actions';
+import {
+    getCarts,
+    createCart,
+    updateCart,
+    deleteCart,
+    emptyCart,
+} from '../../networks';
 
 export function* getCartsSaga(action) {
     try {
-        let result = [];
-        
-        try {
-            result = JSON.parse(window.localStorage.getItem('carts'));
-        } catch (error) {
-        }
+        let result = yield getCarts(action.params);
 
-        yield put(getCartsSuccess(result));
+        if (result.data && result.data.data) {
+            yield put(getCartsSuccess(result.data.data));
+        } else {
+            toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+            yield put(getCartsError());
+        }
     } catch (error) {
-        toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        if (error.response.status != 401) {
+            toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        }
         yield put(getCartsError());
     }
 }
 
-export function* updateCartsSaga(action) {
+export function* createCartSaga(action) {
     try {
-        window.localStorage.setItem('carts', JSON.stringify(action.carts))
-        if (action.cb) {
-            action.cb();
+        let result = yield createCart(action.cart);
+
+        if (result.data) {
+            toast.success('Thêm sản phẩm vào giỏ hàng thành công.');
+            if (action.cb) {
+                action.cb();
+            }
+        } else {
+            toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        }
+    } catch (error) {
+        toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+    }
+}
+
+export function* updateCartSaga(action) {
+    try {
+        let result = yield updateCart(action.cart.id, action.cart);
+
+        if (result.data) {
+            toast.success('Chỉnh sửa sản phẩm trong giỏ hàng thành công.');
+            if (action.cb) {
+                action.cb();
+            }
+        } else {
+            toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        }
+    } catch (error) {
+        toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+    }
+}
+
+export function* deleteCartSaga(action) {
+    try {
+        let result = yield deleteCart(action.cartId);
+
+        if (result.data) {
+            toast.success('Xóa sản phẩm khỏi giỏ hàng thành công.');
+            if (action.cb) {
+                action.cb();
+            }
+        } else {
+            toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        }
+    } catch (error) {
+        toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+    }
+}
+
+export function* deleteAllCartSaga(action) {
+    try {
+        let result = yield emptyCart();
+
+        if (result.data) {
+            if (action.cb) {
+                action.cb();
+            }
+        } else {
+            toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
         }
     } catch (error) {
         toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');

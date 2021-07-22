@@ -2,7 +2,10 @@ import {
     GET_CARTS,
     GET_CARTS_ERROR,
     GET_CARTS_SUCCESS,
-    UPDATE_CARTS,
+    CREATE_CART,
+    UPDATE_CART,
+    DELETE_CART,
+    DELETE_ALL_CART,
 } from './actionTypes';
 
 export const getCarts = (params) => ({
@@ -19,8 +22,25 @@ export const getCartsError = () => ({
     type: GET_CARTS_ERROR
 })
 
-export const updateCarts = (carts, cb) => ({
-    type: UPDATE_CARTS,
-    carts,
+export const createCart = (cart, cb) => ({
+    type: CREATE_CART,
+    cart,
+    cb,
+})
+
+export const updateCart = (cart, cb) => ({
+    type: UPDATE_CART,
+    cart,
+    cb,
+})
+
+export const deleteCart = (cartId, cb) => ({
+    type: DELETE_CART,
+    cartId,
+    cb,
+})
+
+export const deleteAllCart = (cb) => ({
+    type: DELETE_ALL_CART,
     cb,
 })

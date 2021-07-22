@@ -230,7 +230,7 @@ const slug = require('slug');
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { name, is_disable, description, is_new, categories, product_details, images } = req.body;
+        const { name, is_disable, description, is_new, category_parent, categories, product_details, images } = req.body;
 
         try {
             const query = {
@@ -251,6 +251,7 @@ const slug = require('slug');
                 .set({
                     name: name || productFound.name,
                     slug: slug(name || productFound.name),
+                    category_parent,
                     description,
                     is_new,
                     is_disable,
@@ -372,7 +373,7 @@ const slug = require('slug');
         }
     },
     create: async (req, res) => {
-        const { name, desciption, is_new, is_disable, categories, product_details, images } = req.body;
+        const { name, desciption, is_new, is_disable, category_parent, categories, product_details, images } = req.body;
         try {
             const lastProduct = await Products.find({}).sort('id DESC').limit(1);
 
@@ -380,6 +381,7 @@ const slug = require('slug');
                 name,
                 slug: slug(name),
                 sku: `MSP${lastProduct[0] && lastProduct[0].id ? lastProduct[0].id + 1 : 1}`,
+                category_parent,
                 desciption,
                 is_new,
                 is_disable,

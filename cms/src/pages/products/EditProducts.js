@@ -37,11 +37,11 @@ class EditProducts extends Component {
             categories: [],
             product_details: [],
             images: [],
+            category_parent: '',
         },
         categoryOptions: [],
         colorOptions: [],
         sizeOptions: [],
-        currentParentCategoryId: null,
     }
 
     async componentDidMount() {
@@ -76,7 +76,6 @@ class EditProducts extends Component {
                             };
                         }),
                     },
-                    currentParentCategoryId: product.data.data.categories[0] && product.data.data.categories[0].category_id && product.data.data.categories[0].category_id.parent_id || null
                 });
             }
 
@@ -102,10 +101,14 @@ class EditProducts extends Component {
                         })),
                     };
                 });
-                if (parent[0] && parent[0].id) {
-                    this.setState({ currentParentCategoryId: parent[0].id });
-                }
-                this.setState({ categoryOptions: parent });
+                this.setState({ categoryOptions: parent }, () => {
+                    if (parent[0] && parent[0].value && !this.state.formData.category_parent) {
+                        this.setState({ formData: {
+                            ...this.state.formData,
+                            category_parent: parent[0].value,
+                        } });
+                    }
+                });
             }
         } catch (error) {
 
@@ -118,6 +121,10 @@ class EditProducts extends Component {
 
         const newFormData = { ...formData };
         _.set(newFormData, name, value);
+
+        if(name == 'category_parent') {
+            _.set(newFormData, 'categories', []);
+        }
 
         this.setState({
             formData: newFormData
@@ -161,7 +168,7 @@ class EditProducts extends Component {
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        const { id, name, sku, description, is_new, is_disable, categories, product_details, images } = this.state.formData;
+        const { id, name, sku, description, is_new, is_disable, categories, product_details, images, category_parent } = this.state.formData;
 
         const formData = new FormData();
         for (let i = 0; i < images.length; i++) {
@@ -182,7 +189,7 @@ class EditProducts extends Component {
             }
         }
 
-        this.props.updateProduct({ id, name, sku, description, is_new, is_disable, categories, product_details, images: imageUrls }, () => {
+        this.props.updateProduct({ id, name, sku, description, is_new, is_disable, categories, product_details, images: imageUrls, category_parent }, () => {
             this.props.history.push('/products');
         });
     }
@@ -267,12 +274,12 @@ class EditProducts extends Component {
 
     render() {
         const { loading } = this.props;
-        const { categoryOptions, currentParentCategoryId, colorOptions, sizeOptions } = this.state;
-        const { name, sku, description, is_new, is_disable, categories, product_details, images } = this.state.formData;
+        const { categoryOptions, colorOptions, sizeOptions } = this.state;
+        const { name, sku, description, is_new, is_disable, categories, product_details, images, category_parent } = this.state.formData;
 
-        const currentParentCategory = categoryOptions.filter(item => item.value == currentParentCategoryId)[0] || categoryOptions[0];
+        const currentParentCategory = categoryOptions.filter(item => item.value == category_parent)[0] || categoryOptions[0];
         const _categoryOptions = currentParentCategory && currentParentCategory.children || [];
-        console.log(images)
+        console.log(categoryOptions)
 
         return (
             <CRow>
@@ -292,10 +299,8 @@ class EditProducts extends Component {
                                     <CInput disabled value={sku} onChange={this.handleChange} id="sku" name="sku" placeholder="Nhập mã sản phẩm" />
                                 </CFormGroup>
                                 <CFormGroup>
-                                    <CLabel htmlFor="categories">Danh mục sản phẩm:</CLabel>
-                                    <CSelect custom value={currentParentCategoryId} onChange={(e) => {
-                                        this.setState({ currentParentCategoryId: e.target.value });
-                                    }} className="mb-3">
+                                    <CLabel htmlFor="category_parent">Danh mục sản phẩm:</CLabel>
+                                    <CSelect custom value={category_parent || ''} onChange={this.handleChange} id="category_parent" name="category_parent" placeholder="Chọn danh mục sản phẩm" className="mb-3">
                                         {categoryOptions.map(parentOption => <option key={parentOption.value} value={parentOption.value}>{parentOption.label}</option>)}
                                     </CSelect>
                                     <Select
@@ -359,7 +364,7 @@ class EditProducts extends Component {
                                                         <CCol xs="6">
                                                             <CFormGroup>
                                                                 <CLabel htmlFor="color_id">Màu sản phẩm</CLabel>
-                                                                <CSelect required value={product_details[index].color_id} onChange={this.handleNormalSelectChange} id="color_id" name={`product_details[${index}].color_id`}>
+                                                                <CSelect required value={product_details[index].color_id || ''} onChange={this.handleNormalSelectChange} id="color_id" name={`product_details[${index}].color_id`}>
                                                                     <option value="">Chọn màu sản phẩm</option>
                                                                     {colorOptions.map(color => <option key={color.id} value={color.id}>{color.color_name}</option>)}
                                                                 </CSelect>
@@ -379,7 +384,7 @@ class EditProducts extends Component {
                                                                     <CCol xs="6">
                                                                         <CFormGroup>
                                                                             <CLabel htmlFor="size">Kích cỡ</CLabel>
-                                                                            <CSelect required value={product_details[index].sizes[sizeIndex].size_id} onChange={this.handleNormalSelectChange} id="size_id" name={`product_details[${index}].sizes[${sizeIndex}].size_id`}>
+                                                                            <CSelect required value={product_details[index].sizes[sizeIndex].size_id || ''} onChange={this.handleNormalSelectChange} id="size_id" name={`product_details[${index}].sizes[${sizeIndex}].size_id`}>
                                                                                 <option value="">Chọn size sản phẩm</option>
                                                                                 {sizeOptions.map(size => <option key={size.id} value={size.id}>{size.size}</option>)}
                                                                             </CSelect>

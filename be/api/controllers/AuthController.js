@@ -38,7 +38,7 @@ module.exports = {
 			res.status(401).json({
 				success: 0,
 				data: null,
-				message: 'Bạn cần đăng nhập để truy cập hệ thống'
+				message: 'Bạn cần đăng nhập để truy cập hệ thống!'
 			});
 		}
 	},
@@ -72,7 +72,7 @@ module.exports = {
 			res.status(401).json({
 				success: 0,
 				data: null,
-				message: 'Bạn cần đăng nhập để truy cập hệ thống'
+				message: 'Bạn cần đăng nhập để truy cập hệ thống!'
 			});
 		}
 	},
@@ -310,7 +310,7 @@ module.exports = {
 				res.status(401).json({
 					success: 0,
 					data: null,
-					message: 'Bạn cần đăng nhập để truy cập hệ thống'
+					message: 'Bạn cần đăng nhập để truy cập hệ thống!'
 				});
 			}
 		} catch (error) {

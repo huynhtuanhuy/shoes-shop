@@ -43,3 +43,12 @@ export function getTopNewProducts (params) {
         }
     );
 }
+
+export function getTopSalesProducts (params) {
+    return axios.get(
+        `${PRODUCTS_URL}/top-sales`,
+        {
+            params: params || {}
+        }
+    );
+}

@@ -28,6 +28,10 @@ module.exports.policies = {
     '*': true,
   },
 
+  CartsController: {
+    '*': true,
+  },
+
   UserController: {
     '*': ['tryAuth', 'isAdmin'],
     'all': ['tryAuth'],

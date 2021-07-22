@@ -3,6 +3,8 @@ import _ from 'lodash';
 import {
     GET_PRODUCTS_SUCCESS,
     GET_PRODUCTS_ERROR,
+    GET_TOP_SALES_PRODUCTS_SUCCESS,
+    GET_TOP_SALES_PRODUCTS_ERROR,
     GET_TOP_NEW_PRODUCTS_SUCCESS,
     GET_TOP_NEW_PRODUCTS_ERROR,
     GET_TOP_FEATURED_PRODUCTS_SUCCESS,
@@ -20,6 +22,7 @@ const initialState = {
         totalPage: 1,
     },
     topViewProducts: [],
+    topSalesProducts: [],
     topNewProducts: [],
     topFeaturedProducts: []
 }
@@ -35,6 +38,20 @@ const getProductsError = (state, action) => {
     return {
         ...state,
         products: initialState.products,
+    }
+}
+
+const getTopSalesProductsSuccess = (state, action) => {
+    return {
+        ...state,
+        topSalesProducts: action.products,
+    }
+}
+
+const getTopSalesProductsError = (state, action) => {
+    return {
+        ...state,
+        topSalesProducts: initialState.topViewProducts,
     }
 }
 
@@ -86,6 +103,10 @@ const reducer = (state = initialState, action) => {
             return getProductsSuccess(state, action);
         case GET_PRODUCTS_ERROR:
             return getProductsError(state, action);
+        case GET_TOP_SALES_PRODUCTS_SUCCESS:
+            return getTopSalesProductsSuccess(state, action);
+        case GET_TOP_SALES_PRODUCTS_ERROR:
+            return getTopSalesProductsError(state, action);
         case GET_TOP_FEATURED_PRODUCTS_SUCCESS:
             return getTopFeaturedProductsSuccess(state, action);
         case GET_TOP_FEATURED_PRODUCTS_ERROR:

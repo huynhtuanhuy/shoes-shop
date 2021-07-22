@@ -11,6 +11,9 @@ import {
     GET_TOP_VIEW_PRODUCTS,
     GET_TOP_VIEW_PRODUCTS_SUCCESS,
     GET_TOP_VIEW_PRODUCTS_ERROR,
+    GET_TOP_SALES_PRODUCTS,
+    GET_TOP_SALES_PRODUCTS_SUCCESS,
+    GET_TOP_SALES_PRODUCTS_ERROR,
 } from './actionTypes';
 
 export const getProducts = (params) => ({
@@ -40,6 +43,20 @@ export const getTopFeaturedProducts = (params) => ({
 export const getTopViewProducts = (params) => ({
     type: GET_TOP_VIEW_PRODUCTS,
     params
+})
+
+export const getTopSalesProducts = (params) => ({
+    type: GET_TOP_SALES_PRODUCTS,
+    params
+})
+
+export const getTopSalesProductsSuccess = (products) => ({
+    type: GET_TOP_SALES_PRODUCTS_SUCCESS,
+    products
+})
+
+export const getTopSalesProductsError = () => ({
+    type: GET_TOP_SALES_PRODUCTS_ERROR
 })
 
 export const getTopNewProductsSuccess = (products) => ({

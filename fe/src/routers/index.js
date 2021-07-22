@@ -16,7 +16,7 @@ import Register from '../pages/Register';
 import Login from '../pages/Login';
 import MyAccount from '../pages/MyAccount';
 import MyOrder from '../pages/MyOrder';
-import Wishlist from '../pages/Wishlist';
+import Favorites from '../pages/Favorites';
 import AboutUs from '../pages/AboutUs';
 
 export default function Routers() {
@@ -34,8 +34,8 @@ export default function Routers() {
       <Route path="/my-order">
         <MyOrder />
       </Route>
-      <Route path="/wishlist">
-        <Wishlist />
+      <Route path="/favorites">
+        <Favorites />
       </Route>
       <Route path="/contact">
         <Contact />
@@ -55,15 +55,38 @@ export default function Routers() {
       <Route path="/cart">
         <Cart />
       </Route>
-      <Route path="/product/:slug">
-        <SingleProduct />
-      </Route>
-      {/* <Route path="/category/:slug/:childSlug">
-        <Category />
-      </Route> */}
-      <Route path="/category/:slug">
-        <Category />
-      </Route>
+      <Route
+        path="/product/:slug"
+        render={props => {
+          const {
+            match: {
+              params: { slug }
+            }
+          } = props;
+          return (
+            <SingleProduct
+              key={slug}
+              {...props}
+            />
+          );
+        }}
+      />
+      <Route
+        path="/category/:slug"
+        render={props => {
+          const {
+            match: {
+              params: { slug }
+            }
+          } = props;
+          return (
+            <Category
+              key={slug}
+              {...props}
+            />
+          );
+        }}
+      />
       <Route exact path="/">
         <Home />
       </Route>

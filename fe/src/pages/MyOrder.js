@@ -103,7 +103,7 @@ class MyOrder extends Component {
                                                                         <td>{orderItem.customer_fullname}</td>
                                                                         <td>{orderItem.customer_address}</td>
                                                                         <td>{orderItem.order_product_details && orderItem.order_product_details.length || 0}</td>
-                                                                        <td>{Number(orderItem.total).toLocaleString()} VNĐ</td>
+                                                                        <td>{Number(orderItem.total).toLocaleString()} VND</td>
                                                                         <td>{new Date(orderItem.created_at).toLocaleDateString()}</td>
                                                                         <td>{this.renderOrderStatus(orderItem.status)}</td>
                                                                     </tr>

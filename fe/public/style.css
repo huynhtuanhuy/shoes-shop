@@ -945,20 +945,23 @@ body {
     margin-top: 30px;
 }
 .level-pro-new , .level-pro-sale {
-    background-color: #5eb4c1;
     color: #fff;
     font-family: "Montserrat",sans-serif;
     min-width: 78px;
     padding: 5px 10px;
     position: absolute;
-    right: 0;
     text-align: center;
     text-transform: uppercase;
     top: 0;
     z-index: 5;
 }
+.level-pro-new {
+    background-color: #5eb4c1;
+    right: 0;
+}
 .level-pro-sale {
-    background-color: #333333;
+    background-color: #f25862;
+    left: 0;
 }
 .product-img a {
     display: block;
@@ -1010,6 +1013,7 @@ body {
     font-size: 12px;
     margin-right: 5px;
     text-decoration: line-through;
+    color: rgba(128, 128, 128, 0.7);
 }
 .price-rating span {
     font-size: 15px;
@@ -2226,11 +2230,19 @@ ul.address li span {
     display: block;
     font-size: 18px;
     font-weight: 700;
-    margin: 15px 0;
+    margin: 5px 0;
+}
+.item-price span.old-price {
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    text-decoration: line-through;
+    color: rgba(128, 128, 128, 0.7);
 }
 .item-price {
     border-bottom: 1px dashed #ccc;
     margin-bottom: 15px;
+    margin-top: 15px;
 }
 .single-product-info {
     border-bottom: 1px dashed #ccc;
@@ -2257,7 +2269,8 @@ ul.address li span {
     width: 40px;
     display: block;
 }
-.action .add-to-links a:hover {
+.action .add-to-links a:hover,
+.action .add-to-links a.active {
     background-color: #e03550;
     color: #fff;
 }
@@ -2291,11 +2304,21 @@ ul.address li span {
 .select-catagory em {
     color: #f25862;
 }
+.price-box {
+    margin-top: 15px;
+}
 .price-box span {
     display: block;
     font-size: 20px;
     font-weight: 700;
-    margin: 10px 0 20px;
+    margin-bottom: 5px;
+}
+.price-box span.old-price {
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    text-decoration: line-through;
+    color: rgba(128, 128, 128, 0.7);
 }
 .single-cart {
     border-bottom: 1px dashed #ccc;
@@ -2623,11 +2646,29 @@ p.tag-rules {
 .cart-product-name a,
 .edit a,
 .move-wishlist a,
-.unit-price span,
+.cart-product-color span,
+.cart-product-size span,
 .quantity span,
 .subtotal span,
 .remove-icon a {
     line-height: 90px;
+}
+.unit-price > div {
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.unit-price span {
+    display: block;
+}
+.unit-price span.old-price {
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    text-decoration: line-through;
+    color: rgba(128, 128, 128, 0.7);
 }
 .shopping-button {
     border-bottom: 1px solid #f2f2f2;
@@ -2635,6 +2676,16 @@ p.tag-rules {
     border-right: 1px solid #f2f2f2;
     overflow: hidden;
     padding: 25px 15px;
+}
+.unit-price-checkout span {
+    display: block;
+}
+.unit-price-checkout span.old-price {
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    text-decoration: line-through;
+    color: rgba(128, 128, 128, 0.7);
 }
 .continue-shopping {
     float: left;
@@ -3360,9 +3411,6 @@ button.check-button:hover,
   /* min-height: 560px; */
 }
 
-
-
-
-
-
-
+.owl-controls.clickable {
+    display: none !important;
+}

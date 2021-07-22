@@ -14,17 +14,16 @@ class Cart extends Component {
     }
 
     handleEmptyCart = () => {
-        this.props.updateCarts([]);
+        this.props.deleteAllCart(() => {
+            this.props.getCarts({});
+        });
     }
 
-    handleRemoveCartItem = (removeIndex) => {
-        const { carts } = this.props;
-
-        this.props.updateCarts(
-            carts.filter((item, index) => index != removeIndex),
+    handleRemoveCartItem = (cartId) => {
+        this.props.deleteCart(
+            cartId,
             () => {
                 this.props.getCarts({});
-                toast.success("Xóa sản phẩm khỏi giỏ hàng thành công!");
             }
         );
     }
@@ -43,11 +42,10 @@ class Cart extends Component {
 
         carts[saveIndex] = this.state.editingData;
 
-        this.props.updateCarts(
-            carts,
+        this.props.updateCart(
+            this.state.editingData,
             () => {
                 this.props.getCarts({});
-                toast.success("Cập nhật giỏ hàng thành công!");
                 this.setState({
                     editingIndex: null,
                     editingData: null,
@@ -93,6 +91,8 @@ class Cart extends Component {
                                         <tr>
                                             <th className="cart-item-img" />
                                             <th className="cart-product-name text-center">Sản phẩm</th>
+                                            <th className="cart-product-color text-center">Màu sắc</th>
+                                            <th className="cart-product-size text-center">Size</th>
                                             <th className="unit-price text-center">Giá</th>
                                             <th className="quantity text-center">Số lượng</th>
                                             <th className="subtotal text-center">Tổng cộng</th>
@@ -110,8 +110,38 @@ class Cart extends Component {
                                                 <td className="cart-product-name">
                                                     <a href="/single-product">{cartItem.product.name}</a>
                                                 </td>
+                                                <td className="cart-product-color">
+                                                    <span>
+                                                        {cartItem.productDetail && cartItem.productDetail.color_id && cartItem.productDetail.color_id.color_code && (
+                                                            <span style={{
+                                                                backgroundColor: cartItem.productDetail.color_id.color_code,
+                                                                display: 'inline-block',
+                                                                width: 15,
+                                                                height: 15,
+                                                                margin: 0,
+                                                                borderRadius: '100%',
+                                                                color: '#ffffff',
+                                                                fontSize: 10,
+                                                                textAlign: 'center',
+                                                                lineHeight: '15px',
+                                                            }}></span>
+                                                        )}
+                                                    </span>
+                                                </td>
+                                                <td className="cart-product-size">
+                                                    <span>{cartItem.productSizeDetail && cartItem.productSizeDetail.size_id && cartItem.productSizeDetail.size_id.size}</span>
+                                                </td>
                                                 <td className="unit-price">
-                                                    <span>{Number(cartItem.price || 0).toLocaleString()} VNĐ</span>
+                                                    <div>
+                                                        <span className={cartItem.sale_price ? 'old-price' : ''}>
+                                                            {Number(cartItem.price || 0).toLocaleString()} VND
+                                                        </span>
+                                                        {cartItem.sale_price ? (
+                                                            <>
+                                                                <span>{Number(cartItem.sale_price || 0).toLocaleString()} VND</span>
+                                                            </>
+                                                        ) : ''}
+                                                    </div>
                                                 </td>
                                                 <td className="quantity">
                                                     <span>
@@ -121,29 +151,29 @@ class Cart extends Component {
                                                     </span>
                                                 </td>
                                                 <td className="subtotal">
-                                                    <span>{Number((cartItem.price || 0)*cartItem.quantity).toLocaleString()} VNĐ</span>
+                                                    <span>{Number((cartItem.sale_price || cartItem.price || 0) * cartItem.quantity).toLocaleString()} VND</span>
                                                 </td>
                                                 <td className="remove-icon">
                                                     {editingIndex != null && carts[editingIndex] ? (editingIndex == index ? (
                                                         <a href="#" onClick={(e) => {
                                                             e.preventDefault();
                                                             this.handleSaveCartItem(index);
-                                                        }} style={{marginRight: 10,}}>
+                                                        }} style={{ marginRight: 10, }}>
                                                             <span className="glyphicon glyphicon-floppy-disk"></span>
                                                         </a>
                                                     ) : '') : (
                                                         <a href="#" onClick={(e) => {
                                                             e.preventDefault();
                                                             this.handleEditCartItem(index, cartItem);
-                                                        }} style={{marginRight: 10,}}>
+                                                        }} style={{ marginRight: 10, }}>
                                                             <span className="glyphicon glyphicon-edit"></span>
                                                         </a>
                                                     )}
                                                     <a href="#" onClick={(e) => {
                                                         e.preventDefault();
-                                                        this.handleRemoveCartItem(index);
+                                                        this.handleRemoveCartItem(cartItem.id);
                                                     }}>
-                                                        <span style={{color: 'red'}} className="glyphicon glyphicon-remove"></span>
+                                                        <span style={{ color: 'red' }} className="glyphicon glyphicon-remove"></span>
                                                     </a>
                                                 </td>
                                             </tr>
@@ -166,9 +196,9 @@ class Cart extends Component {
                     </div>
                     {carts && carts.length > 0 ? (
                         <div className="row">
-                            <div className="col-sm-4 col-sm-offset-8">
+                            <div className="col-sm-5 col-sm-offset-7">
                                 <div className="totals">
-                                    <h3>Tổng cộng <span>{carts && carts.length > 0 ? Number(carts.reduce((total, cartItem) => total + (cartItem.price || 0)*cartItem.quantity, 0)).toLocaleString() : 0} VNĐ</span></h3>
+                                    <h3>Tổng cộng <span>{carts && carts.length > 0 ? Number(carts.reduce((total, cartItem) => total + (cartItem.sale_price || cartItem.price || 0) * cartItem.quantity, 0)).toLocaleString() : 0} VND</span></h3>
                                     <div className="shopping-button">
                                         <a href="/checkout">
                                             <button type="submit">Tiến hành thanh toán</button>
@@ -193,7 +223,9 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = dispatch => ({
-    updateCarts: (carts, cb) => dispatch(actions.updateCarts(carts, cb)),
+    updateCart: (cart, cb) => dispatch(actions.updateCart(cart, cb)),
+    deleteAllCart: (cb) => dispatch(actions.deleteAllCart(cb)),
+    deleteCart: (cartId, cb) => dispatch(actions.deleteCart(cartId, cb)),
     getCarts: (params) => dispatch(actions.getCarts(params)),
 });
 

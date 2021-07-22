@@ -97,22 +97,47 @@ class SingleProduct extends Component {
             return toast.success("Số lượng sản phẩm không hợp lệ!");
         }
 
-        this.props.updateCarts([
-            ...carts,
-            {
-                product: this.state.product,
-                productDetail: colors[currentProductDetailIndex],
-                productSizeDetail: sizes[currentProductSizeDetailIndex],
-                price: product.product_details[currentProductDetailIndex].price,
-                quantity,
-            }
-        ], () => {
+        this.props.createCart({
+            product_id: product.id,
+            product_detail_id: colors[currentProductDetailIndex] && colors[currentProductDetailIndex].id,
+            product_size_detail_id: sizes[currentProductSizeDetailIndex] && sizes[currentProductSizeDetailIndex].id,
+            price: product.product_details[currentProductDetailIndex].price,
+            sale_price: 0,
+            quantity,
+        }, () => {
             this.props.getCarts({});
-            toast.success("Thêm sản phẩm vào giỏ hàng thành công!");
         });
     }
 
+    toggleFavorite = async (e) => {
+        e.preventDefault();
+        const { product } = this.state;
+
+        if (product.is_favorite) {
+            await networks.deleteProductFavorites(product.id);
+            toast.success("Xóa sản phẩm khỏi danh sách yêu thích thành công!");
+
+            this.setState({
+                product: {
+                    ...product,
+                    is_favorite: false,
+                }
+            });
+        } else {
+            await networks.createProductFavorites({ product_id: product.id });
+            toast.success("Thêm sản phẩm vào danh sách yêu thích thành công!");
+
+            this.setState({
+                product: {
+                    ...product,
+                    is_favorite: true,
+                }
+            });
+        }
+    }
+
     render() {
+        const { isAuth } = this.props;
         const { product, currentProductDetailIndex, currentProductSizeDetailIndex, quantity, currentProductImageIndex } = this.state;
 
         if (!product || !product.id) {
@@ -169,11 +194,16 @@ class SingleProduct extends Component {
                                         <a href="#" className="product-name">{product.name}</a>
                                         <div className="avalable">
                                             <p>Tình trạng: {(
-                                                sizes[currentProductSizeDetailIndex] && sizes[currentProductSizeDetailIndex].quantity > 0 ? <span> Còn hàng ({sizes[currentProductSizeDetailIndex].quantity} sản phẩm)</span> : <span> Hết hàng</span>
+                                                sizes && sizes[currentProductSizeDetailIndex] && sizes[currentProductSizeDetailIndex].quantity > 0 ? <span> Còn hàng ({sizes[currentProductSizeDetailIndex].quantity} sản phẩm)</span> : <span> Hết hàng</span>
                                             )}</p>
                                         </div>
                                         <div className="item-price">
-                                            <span>{product.product_details && product.product_details[currentProductDetailIndex] ? `${Number(product.product_details[currentProductDetailIndex].price).toLocaleString()} VNĐ` : '0 VNĐ'}</span>
+                                            <span className={product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sales && product.product_details[currentProductDetailIndex].sales[0] ? 'old-price' : ''}>
+                                                {product.product_details && product.product_details[currentProductDetailIndex] ? `${Number(product.product_details[currentProductDetailIndex].price).toLocaleString()} VND` : '0 VND'}
+                                            </span>
+                                            {product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sales && product.product_details[currentProductDetailIndex].sales[0] ? (
+                                                <span>{Number(product.product_details[currentProductDetailIndex].sales[0].sale_price).toLocaleString()} VND</span>
+                                            ) : <span>&nbsp;</span>}
                                         </div>
                                         <div className="single-product-info">
                                             <div dangerouslySetInnerHTML={{ __html: product.description }}></div>
@@ -181,15 +211,17 @@ class SingleProduct extends Component {
                                                 <img src="/img/product/share.png" alt />
                                             </div>
                                         </div>
-                                        <div className="action">
-                                            <ul className="add-to-links">
-                                                <li>
-                                                    <a href="#">
-                                                        <i className="fa fa-heart" />
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
+                                        {isAuth && (
+                                            <div className="action">
+                                                <ul className="add-to-links">
+                                                    <li>
+                                                        <a className={product.is_favorite ? "active" : ""} href="#" onClick={this.toggleFavorite}>
+                                                            <i className="fa fa-heart" />
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        )}
                                         <div className="select-catagory">
                                             <div className="color-select">
                                                 <label className="required">
@@ -259,10 +291,15 @@ class SingleProduct extends Component {
                                         </div>
                                         <div className="cart-item">
                                             <div className="price-box">
-                                                <span>{product.product_details && product.product_details[currentProductDetailIndex] ? `${Number(product.product_details[currentProductDetailIndex].price * quantity).toLocaleString()} VNĐ` : '0 VNĐ'}</span>
+                                                <span className={product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sales && product.product_details[currentProductDetailIndex].sales[0] ? 'old-price' : ''}>
+                                                    {product.product_details && product.product_details[currentProductDetailIndex] ? `${Number(product.product_details[currentProductDetailIndex].price * quantity).toLocaleString()} VND` : '0 VND'}
+                                                </span>
+                                                {product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sales && product.product_details[currentProductDetailIndex].sales[0] ? (
+                                                    <span>{Number(product.product_details[currentProductDetailIndex].sales[0].sale_price * quantity).toLocaleString()} VND</span>
+                                                ) : <span>&nbsp;</span>}
                                             </div>
                                             {
-                                                sizes[currentProductSizeDetailIndex] && sizes[currentProductSizeDetailIndex].quantity > 0 && (
+                                                sizes && sizes[currentProductSizeDetailIndex] && sizes[currentProductSizeDetailIndex].quantity > 0 && (
                                                     <div className="single-cart">
                                                         <div className="cart-plus-minus">
                                                             <label>Số lượng: </label>
@@ -323,11 +360,12 @@ const mapStateToProps = (state) => {
     return {
         loading: state.common.loading,
         carts: state.carts.carts,
+        isAuth: state.auth.isAuth,
     }
 }
 
 const mapDispatchToProps = dispatch => ({
-    updateCarts: (carts, cb) => dispatch(actions.updateCarts(carts, cb)),
+    createCart: (cart, cb) => dispatch(actions.createCart(cart, cb)),
     getCarts: (params) => dispatch(actions.getCarts(params)),
 });
 

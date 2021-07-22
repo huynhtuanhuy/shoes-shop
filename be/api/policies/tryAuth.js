@@ -25,7 +25,7 @@ module.exports = async (req, res, next) => {
     return res.status(401).json({
       success: 0,
       data: null,
-      message: 'You are not logged in!.'
+      message: 'Bạn cần đăng nhập để truy cập hệ thống!'
     });
   }
 };
