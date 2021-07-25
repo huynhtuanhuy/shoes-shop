@@ -22,6 +22,7 @@ module.exports.policies = {
   FrontendController: {
     '*': true,
     'getOrders': ['tryAuth'],
+    'getOrderById': ['tryAuth'],
   },
 
   AuthController: {

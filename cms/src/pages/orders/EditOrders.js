@@ -221,7 +221,7 @@ class EditOrders extends Component {
                                                                     <CSelect required custom value={order_product_details[index].product_detail_id} onChange={(e) => {
                                                                         this.handleNormalSelectChange(e);
                                                                         const currentProductDetail = currentProduct && currentProduct.product_details && currentProduct.product_details.filter(item => item.id == e.target.value)[0] || null;
-                                                                        this.handleChange({ target: { name: `order_product_details[${index}].sale_price`, value: currentProductDetail.price } });
+                                                                        this.handleChange({ target: { name: `order_product_details[${index}].sale_price`, value: currentProductDetail.sales && currentProductDetail.sales[0] && currentProductDetail.sales[0].sale_price || 0 } });
                                                                         this.handleChange({ target: { name: `order_product_details[${index}].price`, value: currentProductDetail.price  } });
                                                                         this.handleChange({ target: { name: `order_product_details[${index}].product_size_detail_id`, value: ""  } });
                                                                     }} name={`order_product_details[${index}].product_detail_id`}>
@@ -250,7 +250,13 @@ class EditOrders extends Component {
                                                             </CCol>
                                                             <CCol xs="4">
                                                                 <CFormGroup>
-                                                                    <CLabel htmlFor="sale_price">Giá</CLabel>
+                                                                    <CLabel htmlFor="price">Giá</CLabel>
+                                                                    <CInput disabled value={order_product_details[index].price} onChange={this.handleChange} required name={`order_product_details[${index}].price`} placeholder="Nhập giá" />
+                                                                </CFormGroup>
+                                                            </CCol>
+                                                            <CCol xs="4">
+                                                                <CFormGroup>
+                                                                    <CLabel htmlFor="sale_price">Giá khuyến mãi</CLabel>
                                                                     <CInput disabled value={order_product_details[index].sale_price} onChange={this.handleChange} required name={`order_product_details[${index}].sale_price`} placeholder="Nhập giá" />
                                                                 </CFormGroup>
                                                             </CCol>

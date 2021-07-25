@@ -304,7 +304,7 @@ class SingleProduct extends Component {
                                                         <div className="cart-plus-minus">
                                                             <label>Số lượng: </label>
                                                             <div onClick={() => {
-                                                                if (quantity - 1 >= 0) {
+                                                                if (quantity - 1 > 0) {
                                                                     this.setState({ quantity: quantity - 1 });
                                                                 }
                                                             }} className="dec qtybutton">{'<'}</div>

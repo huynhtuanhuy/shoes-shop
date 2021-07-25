@@ -5,9 +5,9 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
- const moment = require('moment');
+const moment = require('moment');
 
- module.exports = {
+module.exports = {
     all: async (req, res) => {
         const { page = 1, perPage = 10 } = req.query;
         try {
@@ -18,8 +18,8 @@
             const productData = await Products.find({
                 id: cartData.map(item => item.product_id)
             })
-            .populate('product_details')
-            .populate('images');
+                .populate('product_details')
+                .populate('images');
 
             const productDetails = await ProductDetails.find({
                 id: cartData.map(item => item.product_detail_id)
@@ -177,21 +177,45 @@
                 .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                 .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf()) : [];
 
-            const cartCreated = await Carts.create({
+            const cartItemFound = await Carts.findOne({
                 product_id,
                 product_detail_id,
                 product_size_detail_id,
-                quantity,
-                price,
-                sale_price: sales && sales[0] ? sales[0].sale_price : sale_price,
                 cart_id: req.session.id,
-            }).fetch();
-
-            return res.json({
-                success: 1,
-                data: cartCreated,
-                message: '',
             });
+
+            if (cartItemFound && cartItemFound.id) {
+                await Carts.updateOne({ id: cartItemFound.id })
+                    .set({
+                        quantity: quantity + cartItemFound.quantity,
+                        price,
+                        sale_price: sales && sales[0] ? sales[0].sale_price : sale_price,
+                    });
+
+                const cartUpdated = await Carts.findOne({ id: cartItemFound.id });
+
+                return res.json({
+                    success: 1,
+                    data: cartUpdated,
+                    message: '',
+                });
+            } else {
+                const cartCreated = await Carts.create({
+                    product_id,
+                    product_detail_id,
+                    product_size_detail_id,
+                    quantity,
+                    price,
+                    sale_price: sales && sales[0] ? sales[0].sale_price : sale_price,
+                    cart_id: req.session.id,
+                }).fetch();
+
+                return res.json({
+                    success: 1,
+                    data: cartCreated,
+                    message: '',
+                });
+            }
         } catch (error) {
             console.log(error);
             res.status(500).json({

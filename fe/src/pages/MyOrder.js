@@ -89,10 +89,10 @@ class MyOrder extends Component {
                                                                 <th>SĐT người nhận</th>
                                                                 <th>Tên người nhận</th>
                                                                 <th>Địa chỉ nhận hàng</th>
-                                                                <th>Số lượng sản phẩm</th>
                                                                 <th>Tổng tiền</th>
                                                                 <th>Ngày đặt</th>
                                                                 <th>Trạng thái</th>
+                                                                <th></th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -102,10 +102,12 @@ class MyOrder extends Component {
                                                                         <td>{orderItem.customer_phone}</td>
                                                                         <td>{orderItem.customer_fullname}</td>
                                                                         <td>{orderItem.customer_address}</td>
-                                                                        <td>{orderItem.order_product_details && orderItem.order_product_details.length || 0}</td>
                                                                         <td>{Number(orderItem.total).toLocaleString()} VND</td>
                                                                         <td>{new Date(orderItem.created_at).toLocaleDateString()}</td>
                                                                         <td>{this.renderOrderStatus(orderItem.status)}</td>
+                                                                        <td>
+                                                                            <Link to={`/my-order/${orderItem.id}`}>Xem chi tiết</Link>
+                                                                        </td>
                                                                     </tr>
                                                                 ))
                                                             ) : ''}

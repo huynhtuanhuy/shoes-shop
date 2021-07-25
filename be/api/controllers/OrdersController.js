@@ -5,7 +5,7 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
- module.exports = {
+module.exports = {
     find: async (req, res) => {
         const { page = 1, perPage = 10, sorted = [], filtered = [] } = req.query;
         try {
@@ -64,7 +64,7 @@
             }
 
             const order_product_details = await OrderProductDetails.find({ order_id: orderFound.id });
-            
+
             const product_details = await ProductDetails.find({
                 id: {
                     in: order_product_details.map(item => item.product_detail_id),
@@ -112,6 +112,30 @@
                 });
             }
 
+            if (orderFound.status == 'accomplished') {
+                return res.status(400).json({
+                    success: 0,
+                    data: null,
+                    message: 'Đơn hàng đã hoàn thành!'
+                });
+            }
+
+            if (orderFound.status == 'cancelled') {
+                return res.status(400).json({
+                    success: 0,
+                    data: null,
+                    message: 'Đơn hàng đã bị hủy!'
+                });
+            }
+
+            if (orderFound.status == 'shipping') {
+                return res.status(400).json({
+                    success: 0,
+                    data: null,
+                    message: 'Đơn hàng hiện đang được giao!'
+                });
+            }
+
             await Orders.updateOne({ id })
                 .set({
                     user_id,
@@ -120,43 +144,78 @@
                     customer_email,
                     customer_address,
                     status,
-                    total: order_product_details.reduce((total, order_detail) => total + (order_detail.quantity*order_detail.sale_price), 0)
+                    total: order_product_details.reduce((total, order_detail) => total + (order_detail.quantity * (order_detail.sale_price || order_detail.price)), 0)
                 });
 
-            if (order_product_details) {
-                const orderProductDetailsToDelete = [];
-                for (let i = 0; i < orderFound.order_product_details.length; i++) {
-                    if (!order_product_details.filter(order_product_detail => order_product_detail.id).map(order_product_detail => order_product_detail.id).includes(orderFound.order_product_details[i].id)) {
-                        orderProductDetailsToDelete.push(orderFound.order_product_details[i].id);
+            if (status == 'accomplished') {
+                if (orderFound.order_product_details && orderFound.order_product_details.length > 0) {
+                    for (let i = 0; i < orderFound.order_product_details.length; i++) {
+                        const order_product_detail = orderFound.order_product_details[i];
+                        if (order_product_detail && order_product_detail.product_detail_id) {
+                            const productDetail = await ProductDetails.findOne({ id: order_product_detail.product_detail_id })
+                                .populate('product_id');
+
+                            if (productDetail && productDetail.product_id && productDetail.product_id.id) {
+                                await Products.updateOne({
+                                    where: {
+                                        id: productDetail.product_id.id
+                                    }
+                                }).set({
+                                    sold: productDetail.product_id.sold + order_product_detail.quantity,
+                                });
+                            }
+                        }
+                        if (order_product_detail && order_product_detail.product_size_detail_id) {
+                            const productSizeDetail = await ProductSizeDetails.findOne({ id: order_product_detail.product_size_detail_id });
+
+                            if (productSizeDetail && productSizeDetail.id) {
+                                await ProductSizeDetails.updateOne({
+                                    where: {
+                                        id: productSizeDetail.id
+                                    }
+                                }).set({
+                                    quantity: productSizeDetail.quantity - order_product_detail.quantity,
+                                });
+                            }
+                        }
                     }
                 }
-                await OrderProductDetails.destroy({
-                    id: {
-                        in: orderProductDetailsToDelete
+            } else {
+                if (order_product_details) {
+                    const orderProductDetailsToDelete = [];
+                    for (let i = 0; i < orderFound.order_product_details.length; i++) {
+                        if (!order_product_details.filter(order_product_detail => order_product_detail.id).map(order_product_detail => order_product_detail.id).includes(orderFound.order_product_details[i].id)) {
+                            orderProductDetailsToDelete.push(orderFound.order_product_details[i].id);
+                        }
                     }
-                });
-    
-                for (let i = 0; i < order_product_details.length; i++) {
-                    const order_product_detail = order_product_details[i];
-                    if (!order_product_detail.id) {
-                        await OrderProductDetails.create({
-                            order_id: orderFound.id,
-                            product_detail_id: order_product_detail.product_detail_id,
-                            product_size_detail_id: order_product_detail.product_size_detail_id,
-                            quantity: order_product_detail.quantity,
-                            price: order_product_detail.price,
-                            sale_price: order_product_detail.sale_price,
-                        });
-                    } else {
-                        await OrderProductDetails.updateOne({
-                            id: order_product_detail.id
-                        }).set({
-                            product_detail_id: order_product_detail.product_detail_id,
-                            product_size_detail_id: order_product_detail.product_size_detail_id,
-                            quantity: order_product_detail.quantity,
-                            price: order_product_detail.price,
-                            sale_price: order_product_detail.sale_price,
-                        });
+                    await OrderProductDetails.destroy({
+                        id: {
+                            in: orderProductDetailsToDelete
+                        }
+                    });
+
+                    for (let i = 0; i < order_product_details.length; i++) {
+                        const order_product_detail = order_product_details[i];
+                        if (!order_product_detail.id) {
+                            await OrderProductDetails.create({
+                                order_id: orderFound.id,
+                                product_detail_id: order_product_detail.product_detail_id,
+                                product_size_detail_id: order_product_detail.product_size_detail_id,
+                                quantity: order_product_detail.quantity,
+                                price: order_product_detail.price,
+                                sale_price: order_product_detail.sale_price,
+                            });
+                        } else {
+                            await OrderProductDetails.updateOne({
+                                id: order_product_detail.id
+                            }).set({
+                                product_detail_id: order_product_detail.product_detail_id,
+                                product_size_detail_id: order_product_detail.product_size_detail_id,
+                                quantity: order_product_detail.quantity,
+                                price: order_product_detail.price,
+                                sale_price: order_product_detail.sale_price,
+                            });
+                        }
                     }
                 }
             }

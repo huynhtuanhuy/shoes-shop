@@ -4,11 +4,11 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
- const slug = require("slug");
- const bcrypt = require('bcrypt');
- const moment = require('moment');
+const slug = require("slug");
+const bcrypt = require('bcrypt');
+const moment = require('moment');
 
- module.exports = {
+module.exports = {
     getOrders: async (req, res) => {
         const { page = 1, perPage = 10 } = req.query;
 
@@ -27,7 +27,52 @@
                     page: Number(page),
                     total: total,
                     perPage: Number(perPage),
-                    totalPage: Math.ceil(Number(total)/Number(perPage)),
+                    totalPage: Math.ceil(Number(total) / Number(perPage)),
+                },
+                message: '',
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: 0,
+                data: null,
+                message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
+            });
+        }
+    },
+    getOrderById: async (req, res) => {
+        const { id } = req.params;
+
+        try {
+            const orderFound = await Orders.findOne({
+                id,
+                user_id: req.session.userInfo.id,
+            }).populate('order_product_details');
+
+            if (!orderFound || !orderFound.id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Đơn hàng không tồn tại!',
+                });
+            }
+
+            const orderProductDetails = await OrderProductDetails.find({ order_id: orderFound.id });
+
+            const productDetails = await ProductDetails.find({ id: orderProductDetails.map(item => item.product_detail_id) }).populate('product_id').populate('color_id');
+            const productSizeDetails = await ProductSizeDetails.find({ id: orderProductDetails.map(item => item.product_size_detail_id) }).populate('size_id');
+
+            res.json({
+                success: 1,
+                data: {
+                    ...orderFound,
+                    order_product_details: orderProductDetails.map(item => {
+                        return {
+                            ...item,
+                            product_detail: productDetails.filter(productDetail => productDetail.id == item.product_detail_id)[0],
+                            product_size_detail: productSizeDetails.filter(productSizeDetail => productSizeDetail.id == item.product_size_detail_id)[0],
+                        }
+                    }),
                 },
                 message: '',
             });
@@ -80,7 +125,7 @@
                 customer_email: email || userFound.email,
                 customer_address: address,
                 status: 'pending',
-                total: carts.reduce((total, cartItem) => total + cartItem.quantity*(cartItem.sale_price || cartItem.price || 0), 0),
+                total: carts.reduce((total, cartItem) => total + cartItem.quantity * (cartItem.sale_price || cartItem.price || 0), 0),
             }).fetch();
 
             for (let i = 0; i < carts.length; i++) {
@@ -142,7 +187,7 @@
                     user_id: req.session.userInfo.id,
                 });
             }
-            
+
             const now = moment().valueOf();
 
             res.json({
@@ -181,7 +226,7 @@
             let color = null;
             let sizes = [];
             let priceRange = [0, 100000000];
-            
+
             try {
                 const filteredParser = JSON.parse(filtered);
 
@@ -206,7 +251,7 @@
                 productDetailQuery.color_id = color;
             }
 
-            const productDetails = await ProductDetails.find(productDetailQuery);
+            const productDetails = await ProductDetails.find(productDetailQuery).populate('color_id').populate('sizes').populate('sales');;
 
             const productCategoryQuery = {
                 product_id: productDetails.map(item => item.product_id),
@@ -226,7 +271,6 @@
                 const categoryFound = await Categories.findOne({ slug: category_parent_slug });
                 productQuery.category_parent = categoryFound && categoryFound.id || null;
             }
-            console.log(productQuery)
 
             const total = await Products.count(productQuery);
             const productData = await Products.find(productQuery)
@@ -236,14 +280,28 @@
                 .populate('product_details')
                 .populate('images');
 
+            const now = moment().valueOf();
+
             res.json({
                 success: 1,
                 data: {
-                    data: productData,
+                    data: productData.map(product => {
+                        return {
+                            ...product,
+                            product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                                return {
+                                    ...productDetail,
+                                    sales: productDetail.sales
+                                        .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                        .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                                }
+                            })
+                        }
+                    }),
                     page: Number(page),
                     total: total,
                     perPage: Number(perPage),
-                    totalPage: Math.ceil(Number(total)/Number(perPage)),
+                    totalPage: Math.ceil(Number(total) / Number(perPage)),
                 },
                 message: '',
             });

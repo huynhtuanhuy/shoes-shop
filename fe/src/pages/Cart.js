@@ -103,12 +103,12 @@ class Cart extends Component {
                                         {carts && carts.length > 0 ? carts.map((cartItem, index) => (
                                             <tr>
                                                 <td className="cart-item-img">
-                                                    <Link to={`/product/${cartItem.product.id}`}>
+                                                    <Link to={`/product/${cartItem.product.slug}`}>
                                                         <img width="100" src={`${baseUrl}/${cartItem.product.images && cartItem.product.images[0] && cartItem.product.images[0].image_path}`} alt />
                                                     </Link>
                                                 </td>
                                                 <td className="cart-product-name">
-                                                    <a href="/single-product">{cartItem.product.name}</a>
+                                                    <Link to={`/product/${cartItem.product.slug}`}>{cartItem.product.name}</Link>
                                                 </td>
                                                 <td className="cart-product-color">
                                                     <span>

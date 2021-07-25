@@ -43,7 +43,7 @@ class Category extends Component {
                         if (this.priceRangeDebounce != null) {
                             clearTimeout(this.priceRangeDebounce);
                         }
-    
+
                         this.priceRangeDebounce = setTimeout(() => {
                             this.loadData();
                         }, 1000);
@@ -133,6 +133,54 @@ class Category extends Component {
 
     handleGoToPage = (page) => {
         this.setState({ page }, () => this.loadData());
+    }
+
+    renderProduct = (product) => {
+        return (
+            <div key={product.id} className="col-lg-4 col-sm-6">
+                <div className="single-product">
+                    {
+                        product && product.is_new && (
+                            <div className="level-pro-new">
+                                <span>SP Mới</span>
+                            </div>
+                        )
+                    }
+                    {
+                        product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] && (
+                            <div className="level-pro-sale">
+                                <span>SP Giảm giá</span>
+                            </div>
+                        )
+                    }
+                    <div className="product-img">
+                        <Link to={`/product/${product.slug}`}>
+                            <img src={product.images && product.images[0] ? `${baseUrl}/${product.images[0].image_path}` : "/img/product/1.png"} alt className="primary-img" />
+                            <img src={product.images && product.images[0] ? `${baseUrl}/${product.images[0].image_path}` : "/img/product/1.png"} alt className="secondary-img" />
+                        </Link>
+                    </div>
+                    <div className="product-price">
+                        <div className="product-name">
+                            <Link to={`/product/${product.slug}`}>{product.name}</Link>
+                        </div>
+                        <div className="price-rating">
+                            <span className={product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? 'old-price' : ''}>
+                                {product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VND` : '0 VND'}
+                            </span>
+                            <br />
+                            {product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? (
+                                <span>{Number(product.product_details[0].sales[0].sale_price).toLocaleString()} VND</span>
+                            ) : <span>&nbsp;</span>}
+                        </div>
+                    </div>
+                    <div className="actions" style={{ width: '100%' }}>
+                        <Link to={`/product/${product.slug}`} style={{ display: 'block', width: '100%' }}>
+                            <button style={{ width: '100%' }} type="submit" className="cart-btn">Xem chi tiết</button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     render() {
@@ -289,40 +337,7 @@ class Category extends Component {
                                     <div className="product-content">
                                         <div className="tab-content">
                                             <div role="tabpanel" className="tab-pane active fade in home2" id="gird">
-                                                {
-                                                    products && products.data && products.data.length > 0 ? products.data.map(product => (
-                                                        <div className="col-lg-4 col-sm-6">
-                                                            <div className="single-product">
-                                                                {
-                                                                    product && product.is_new && (
-                                                                        <div className="level-pro-new">
-                                                                            <span>SP Mới</span>
-                                                                        </div>
-                                                                    )
-                                                                }
-                                                                <div className="product-img">
-                                                                    <Link to={`/product/${product.slug}`}>
-                                                                        <img src={product.images && product.images[0] ? `${baseUrl}/${product.images[0].image_path}` : "/img/product/1.png"} alt className="primary-img" />
-                                                                        <img src={product.images && product.images[0] ? `${baseUrl}/${product.images[0].image_path}` : "/img/product/1.png"} alt className="secondary-img" />
-                                                                    </Link>
-                                                                </div>
-                                                                <div className="product-price">
-                                                                    <div className="product-name">
-                                                                        <Link to={`/product/${product.slug}`}>{product.name}</Link>
-                                                                    </div>
-                                                                    <div className="price-rating">
-                                                                        <span>{product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VND` : '0 VND'}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="actions" style={{ width: '100%' }}>
-                                                                    <Link to={`/product/${product.slug}`} style={{ display: 'block', width: '100%' }}>
-                                                                        <button style={{ width: '100%' }} type="submit" className="cart-btn">Xem chi tiết</button>
-                                                                    </Link>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )) : ''
-                                                }
+                                                {products && products.data && products.data.length > 0 ? products.data.map(product => this.renderProduct(product)) : ''}
                                             </div>
                                         </div>
                                     </div>

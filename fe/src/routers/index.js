@@ -16,6 +16,7 @@ import Register from '../pages/Register';
 import Login from '../pages/Login';
 import MyAccount from '../pages/MyAccount';
 import MyOrder from '../pages/MyOrder';
+import OrderDetail from '../pages/OrderDetail';
 import Favorites from '../pages/Favorites';
 import AboutUs from '../pages/AboutUs';
 
@@ -31,6 +32,22 @@ export default function Routers() {
       <Route path="/my-account">
         <MyAccount />
       </Route>
+      <Route
+        path="/my-order/:id"
+        render={props => {
+          const {
+            match: {
+              params: { id }
+            }
+          } = props;
+          return (
+            <OrderDetail
+              key={id}
+              {...props}
+            />
+          );
+        }}
+      />
       <Route path="/my-order">
         <MyOrder />
       </Route>

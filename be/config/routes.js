@@ -69,6 +69,7 @@ module.exports.routes = {
   'GET /api/fe/products/sizes': 'FrontendController.productSizes',
   'GET /api/fe/products': 'FrontendController.filterProducts',
   'GET /api/fe/products/:productSlug/by-slug': 'FrontendController.getProductBySlug',
+  'GET /api/fe/orders/:id': 'FrontendController.getOrderById',
   'GET /api/fe/orders': 'FrontendController.getOrders',
   'POST /api/fe/orders': 'FrontendController.createOrder',
   'GET /api/fe/favorites': 'UserFavoriteProductsController.find',

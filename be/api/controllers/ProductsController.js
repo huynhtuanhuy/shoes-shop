@@ -6,6 +6,7 @@
  */
 
 const slug = require('slug');
+const moment = require('moment');
 
  module.exports = {
     options: async (req, res) => {
@@ -32,13 +33,15 @@ const slug = require('slug');
                         ]
                     }, [])
                 }
-            }).populate('color_id').populate('sizes');
+            }).populate('color_id').populate('sizes').populate('sales');
 
             const product_size_details = await ProductSizeDetails.find({
                 id: {
                     in: product_details.reduce((total, item) => [...total, ...item.sizes.map(item => item.id)], []),
                 }
             }).populate('size_id');
+
+            const now = moment().valueOf();
 
             res.json({
                 success: 1,
@@ -51,10 +54,13 @@ const slug = require('slug');
                                 category: categories.filter(item => item.id == category.category_id)[0],
                             }
                         }),
-                        product_details: product_details.filter(item => product.product_details.map(_item => _item.id).includes(item.id)).map(item => {
+                        product_details: product_details.filter(item => product.product_details.map(_item => _item.id).includes(item.id)).sort((a, b) => b.sales.length - a.sales.length).map(item => {
                             return {
                                 ...item,
-                                sizes: product_size_details.filter(size => item.sizes.map(_item => _item.id).includes(size.id))
+                                sizes: product_size_details.filter(size => item.sizes.map(_item => _item.id).includes(size.id)),
+                                sales: item.sales
+                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
                             }
                         }),
                     }
@@ -373,7 +379,7 @@ const slug = require('slug');
         }
     },
     create: async (req, res) => {
-        const { name, desciption, is_new, is_disable, category_parent, categories, product_details, images } = req.body;
+        const { name, description, is_new, is_disable, category_parent, categories, product_details, images } = req.body;
         try {
             const lastProduct = await Products.find({}).sort('id DESC').limit(1);
 
@@ -382,7 +388,7 @@ const slug = require('slug');
                 slug: slug(name),
                 sku: `MSP${lastProduct[0] && lastProduct[0].id ? lastProduct[0].id + 1 : 1}`,
                 category_parent,
-                desciption,
+                description,
                 is_new,
                 is_disable,
             }).fetch();
