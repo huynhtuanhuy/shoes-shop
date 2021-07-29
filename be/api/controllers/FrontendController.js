@@ -266,10 +266,11 @@ module.exports = {
             const productQuery = {};
 
             if (category) {
-                productQuery.id = productCategories.map(item => item.product_id);
+                productQuery.id = productCategories.map(item => item.product_id).filter(productId => productDetails.map(item => item.product_id).includes(productId));
             } else if (category_parent_slug) {
                 const categoryFound = await Categories.findOne({ slug: category_parent_slug });
                 productQuery.category_parent = categoryFound && categoryFound.id || null;
+                productQuery.id = productDetails.map(item => item.product_id);
             }
 
             const total = await Products.count(productQuery);
@@ -282,22 +283,35 @@ module.exports = {
 
             const now = moment().valueOf();
 
+            for (let i = 0; i < productData.length; i++) {
+                const product = productData[i];
+
+                let productFavorite = null;
+                if (req.session && req.session.userInfo && req.session.userInfo.id) {
+                    productFavorite = await UserFavoriteProducts.findOne({
+                        product_id: product.id,
+                        user_id: req.session.userInfo.id,
+                    });
+                }
+
+                productData[i] = {
+                    ...product,
+                    is_favorite: productFavorite && productFavorite.id ? true : false,
+                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                        return {
+                            ...productDetail,
+                            sales: productDetail.sales
+                                .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                        }
+                    }),
+                };
+            }
+
             res.json({
                 success: 1,
                 data: {
-                    data: productData.map(product => {
-                        return {
-                            ...product,
-                            product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
-                                return {
-                                    ...productDetail,
-                                    sales: productDetail.sales
-                                        .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
-                                        .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
-                                }
-                            })
-                        }
-                    }),
+                    data: productData,
                     page: Number(page),
                     total: total,
                     perPage: Number(perPage),
@@ -380,21 +394,34 @@ module.exports = {
 
             const now = moment().valueOf();
 
+            for (let i = 0; i < productData.length; i++) {
+                const product = productData[i];
+
+                let productFavorite = null;
+                if (req.session && req.session.userInfo && req.session.userInfo.id) {
+                    productFavorite = await UserFavoriteProducts.findOne({
+                        product_id: product.id,
+                        user_id: req.session.userInfo.id,
+                    });
+                }
+
+                productData[i] = {
+                    ...product,
+                    is_favorite: productFavorite && productFavorite.id ? true : false,
+                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                        return {
+                            ...productDetail,
+                            sales: productDetail.sales
+                                .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                        }
+                    }),
+                };
+            }
+
             res.json({
                 success: 1,
-                data: productData.map(product => {
-                    return {
-                        ...product,
-                        product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
-                            return {
-                                ...productDetail,
-                                sales: productDetail.sales
-                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
-                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
-                            }
-                        })
-                    }
-                }),
+                data: productData,
                 message: '',
             });
         } catch (error) {
@@ -425,21 +452,34 @@ module.exports = {
 
             const now = moment().valueOf();
 
+            for (let i = 0; i < productData.length; i++) {
+                const product = productData[i];
+
+                let productFavorite = null;
+                if (req.session && req.session.userInfo && req.session.userInfo.id) {
+                    productFavorite = await UserFavoriteProducts.findOne({
+                        product_id: product.id,
+                        user_id: req.session.userInfo.id,
+                    });
+                }
+
+                productData[i] = {
+                    ...product,
+                    is_favorite: productFavorite && productFavorite.id ? true : false,
+                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                        return {
+                            ...productDetail,
+                            sales: productDetail.sales
+                                .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                        }
+                    }),
+                };
+            }
+
             res.json({
                 success: 1,
-                data: productData.map(product => {
-                    return {
-                        ...product,
-                        product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
-                            return {
-                                ...productDetail,
-                                sales: productDetail.sales
-                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
-                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
-                            }
-                        })
-                    }
-                }),
+                data: productData,
                 message: '',
             });
         } catch (error) {
@@ -470,21 +510,34 @@ module.exports = {
 
             const now = moment().valueOf();
 
+            for (let i = 0; i < productData.length; i++) {
+                const product = productData[i];
+
+                let productFavorite = null;
+                if (req.session && req.session.userInfo && req.session.userInfo.id) {
+                    productFavorite = await UserFavoriteProducts.findOne({
+                        product_id: product.id,
+                        user_id: req.session.userInfo.id,
+                    });
+                }
+
+                productData[i] = {
+                    ...product,
+                    is_favorite: productFavorite && productFavorite.id ? true : false,
+                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                        return {
+                            ...productDetail,
+                            sales: productDetail.sales
+                                .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                        }
+                    }),
+                };
+            }
+
             res.json({
                 success: 1,
-                data: productData.map(product => {
-                    return {
-                        ...product,
-                        product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
-                            return {
-                                ...productDetail,
-                                sales: productDetail.sales
-                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
-                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
-                            }
-                        })
-                    }
-                }),
+                data: productData,
                 message: '',
             });
         } catch (error) {
@@ -515,21 +568,35 @@ module.exports = {
 
             const now = moment().valueOf();
 
+
+            for (let i = 0; i < productData.length; i++) {
+                const product = productData[i];
+
+                let productFavorite = null;
+                if (req.session && req.session.userInfo && req.session.userInfo.id) {
+                    productFavorite = await UserFavoriteProducts.findOne({
+                        product_id: product.id,
+                        user_id: req.session.userInfo.id,
+                    });
+                }
+
+                productData[i] = {
+                    ...product,
+                    is_favorite: productFavorite && productFavorite.id ? true : false,
+                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                        return {
+                            ...productDetail,
+                            sales: productDetail.sales
+                                .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                                .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
+                        }
+                    }),
+                };
+            }
+
             res.json({
                 success: 1,
-                data: productData.map(product => {
-                    return {
-                        ...product,
-                        product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
-                            return {
-                                ...productDetail,
-                                sales: productDetail.sales
-                                    .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
-                                    .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
-                            }
-                        })
-                    }
-                }),
+                data: productData,
                 message: '',
             });
         } catch (error) {

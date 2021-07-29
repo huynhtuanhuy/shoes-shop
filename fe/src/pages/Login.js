@@ -92,12 +92,12 @@ class Login extends Component {
                                                     <input type="email" name="username" placeholder="Địa chỉ Email" value={formValue.username} onChange={this.handleChange} />
                                                     <input type="password" name="password" placeholder="Mật khẩu" value={formValue.password} onChange={this.handleChange} />
                                                     <div className="button-box text-center">
-                                                        <div className="login-toggle-btn">
-                                                            {/* <input type="checkbox" id="remember" />
-                                                            <label htmlFor="remember">Remember me</label> */}
-                                                            {/* <a href="#">Forgot Password?</a> */}
-                                                        </div>
                                                         <button type="submit" className="default-btn">Đăng nhập</button>
+                                                    </div>
+                                                    <div className="login-toggle-btn text-center">
+                                                        {/* <input type="checkbox" id="remember" />
+                                                            <label htmlFor="remember">Remember me</label> */}
+                                                        <Link to="/forgot-password">Quên mật khẩu?</Link>
                                                     </div>
                                                 </form>
                                             </div>

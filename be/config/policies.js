@@ -27,6 +27,7 @@ module.exports.policies = {
 
   AuthController: {
     '*': true,
+    'changePassword': ['tryAuth'],
   },
 
   CartsController: {

@@ -221,7 +221,19 @@ class SingleProduct extends Component {
                                                     </li>
                                                 </ul>
                                             </div>
-                                        )}
+                                        ) || (
+                                                <div className="action">
+                                                    <ul className="add-to-links">
+                                                        <li>
+                                                            <a href="#" onClick={(e) => {
+                                                                e.preventDefault();
+                                                                toast.error('Vui lòng đăng nhập để sử dụng chức năng này!');
+                                                            }}>
+                                                                <i className="fa fa-heart" />
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>)}
                                         <div className="select-catagory">
                                             <div className="color-select">
                                                 <label className="required">

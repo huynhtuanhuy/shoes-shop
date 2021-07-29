@@ -19,6 +19,8 @@ import MyOrder from '../pages/MyOrder';
 import OrderDetail from '../pages/OrderDetail';
 import Favorites from '../pages/Favorites';
 import AboutUs from '../pages/AboutUs';
+import ForgotPassword from '../pages/ForgotPassword';
+import ChangePassword from '../pages/ChangePassword';
 
 export default function Routers() {
   return (
@@ -28,6 +30,12 @@ export default function Routers() {
       </Route>
       <Route path="/login">
         <Login />
+      </Route>
+      <Route path="/forgot-password">
+        <ForgotPassword />
+      </Route>
+      <Route path="/change-password">
+        <ChangePassword />
       </Route>
       <Route path="/my-account">
         <MyAccount />

@@ -8,9 +8,9 @@
 const slug = require('slug');
 const moment = require('moment');
 
- module.exports = {
+module.exports = {
     find: async (req, res) => {
-        const { page = 1, perPage = 10} = req.query;
+        const { page = 1, perPage = 10 } = req.query;
         try {
             const filter = {
                 user_id: req.session.userInfo.id,
@@ -47,6 +47,7 @@ const moment = require('moment');
                             ...favoriteProduct,
                             product: product ? {
                                 ...product,
+                                is_favorite: true,
                                 product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
                                     return {
                                         ...productDetail,
@@ -111,6 +112,19 @@ const moment = require('moment');
     create: async (req, res) => {
         const { product_id } = req.body;
         try {
+            const userFavoriteProductExist = await UserFavoriteProducts.findOne({
+                product_id,
+                user_id: req.session.userInfo.id,
+            });
+
+            if (userFavoriteProductExist && userFavoriteProductExist.id) {
+                return res.status(400).json({
+                    success: 0,
+                    data: null,
+                    message: 'Sản phẩm này đã nằm trong danh sách yêu thích của bạn rồi!'
+                });
+            }
+
             const userFavoriteProductCreated = await UserFavoriteProducts.create({
                 product_id,
                 user_id: req.session.userInfo.id,

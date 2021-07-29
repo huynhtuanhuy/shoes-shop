@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { toast } from 'react-toastify';
 
+import * as networks from '../networks';
 import * as actions from '../actions';
 
 const baseUrl = process.env.REACT_APP_API_BASE_URL;
@@ -29,9 +31,27 @@ class Favorites extends Component {
         this.setState({ page }, () => this.loadData());
     }
 
+    toggleFavorite = async (e, product) => {
+        e.preventDefault();
+
+        try {
+            if (product.is_favorite) {
+                await networks.deleteProductFavorites(product.id);
+                this.loadData();
+                toast.success("Xóa sản phẩm khỏi danh sách yêu thích thành công!");
+            } else {
+                await networks.createProductFavorites({ product_id: product.id });
+                this.loadData();
+                toast.success("Thêm sản phẩm vào danh sách yêu thích thành công!");
+            }
+        } catch (error) {
+            toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Thêm sản phẩm vào danh sách yêu thích chưa thành công!');
+        }
+    }
+
     render() {
         const { page } = this.state;
-        const { favoriteProducts } = this.props;
+        const { favoriteProducts, isAuth } = this.props;
 
         return (
             <div>
@@ -86,14 +106,41 @@ class Favorites extends Component {
                                                                         <div className="product-name">
                                                                             <Link to={`/product/${product.slug}`}>{product.name}</Link>
                                                                         </div>
-                                                                        <div className="price-rating">
-                                                                            <span className={product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? 'old-price' : ''}>
-                                                                                {product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VND` : '0 VND'}
-                                                                            </span>
-                                                                            <br/>
-                                                                            {product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? (
-                                                                                <span>{Number(product.product_details[0].sales[0].sale_price).toLocaleString()} VND</span>
-                                                                            ) : <span>&nbsp;</span>}
+                                                                        <div className="price-rating row">
+                                                                            <div className="col-md-6">
+                                                                                <span className={product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? 'old-price' : ''}>
+                                                                                    {product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VND` : '0 VND'}
+                                                                                </span>
+                                                                                <br />
+                                                                                {product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? (
+                                                                                    <span>{Number(product.product_details[0].sales[0].sale_price).toLocaleString()} VND</span>
+                                                                                ) : <span>&nbsp;</span>}
+                                                                            </div>
+                                                                            <div className="col-md-6">
+                                                                                {isAuth && (
+                                                                                    <div className="action">
+                                                                                        <ul className="add-to-links text-right">
+                                                                                            <li>
+                                                                                                <a className={product.is_favorite ? "active" : ""} href="#" onClick={(e) => this.toggleFavorite(e, product)}>
+                                                                                                    <i className="fa fa-heart" />
+                                                                                                </a>
+                                                                                            </li>
+                                                                                        </ul>
+                                                                                    </div>
+                                                                                ) || (
+                                                                                        <div className="action">
+                                                                                            <ul className="add-to-links text-right">
+                                                                                                <li>
+                                                                                                    <a href="#" onClick={(e) => {
+                                                                                                        e.preventDefault();
+                                                                                                        toast.error('Vui lòng đăng nhập để sử dụng chức năng này!');
+                                                                                                    }}>
+                                                                                                        <i className="fa fa-heart" />
+                                                                                                    </a>
+                                                                                                </li>
+                                                                                            </ul>
+                                                                                        </div>)}
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                     <div className="actions" style={{ width: '100%' }}>
@@ -146,6 +193,7 @@ const mapStateToProps = (state) => {
     return {
         loading: state.common.loading,
         favoriteProducts: state.productFavorites.favoriteProducts,
+        isAuth: state.auth.isAuth,
     }
 }
 

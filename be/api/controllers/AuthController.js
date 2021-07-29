@@ -225,28 +225,54 @@ module.exports = {
 				});
 			}
 
-			const passwordNew = randomstring.generate({
-				length: 8,
-			})
+			await Users.updateOne({ id: userFound.id })
+				.set({
+					reset_password_code: '123456',
+				});
 
-			const hashPassword = bcrypt.hashSync(passwordNew, 12);
+			res.json({
+				success: 1,
+				data: null,
+				message: '',
+			});
+		} catch (error) {
+			console.log(error);
+			return res.status(500).json({
+				success: 0,
+				data: null,
+				message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
+			});
+		}
+	},
+	resetAccount: async (req, res) => {
+		const { email, new_password } = req.body;
+
+		if (!email || !new_password) {
+			return res.status(400).json({
+				success: 0,
+				data: null,
+				message: 'Cần điền đầy đủ thông tin.'
+			});
+		}
+
+		try {
+			const userFound = await Users.findOne({ email, reset_password_code: '123456', });
+
+			if (!userFound || !userFound.id) {
+				return res.status(404).json({
+					success: 0,
+					data: null,
+					message: 'Không có tài khoản nào được đăng ký với địa chỉ email này.'
+				});
+			}
+
+			const hashPassword = bcrypt.hashSync(new_password, 12);
 
 			await Users.updateOne({ id: userFound.id })
 				.set({
 					password: hashPassword,
+					reset_password_code: '',
 				});
-
-			const mailBody = fs.readFileSync(path.resolve(__dirname, '../mailTemplates/reset_mat_khau_thanh_cong.html'), 'utf-8')
-
-			await emailService.sendMail(
-				email,
-				"Yêu cầu lấy lại mật khẩu thành công",
-				mailBody.replace('%%fullname%%', userFound.name || email)
-					.replace('%%fullname%%', userFound.name || email)
-					.replace('%%fullname%%', userFound.name || email)
-					.replace('%%fullname%%', userFound.name || email)
-					.replace('%%passwordNew%%', passwordNew),
-			);
 
 			res.json({
 				success: 1,

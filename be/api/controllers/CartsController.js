@@ -137,6 +137,24 @@ module.exports = {
                 });
             }
 
+            const productSizeDetailFound = await ProductSizeDetails.findOne({ id: (product_size_detail_id || cartItemFound.product_size_detail_id) });
+
+            if (!productSizeDetailFound || !productSizeDetailFound.id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Thông số sản phẩm không tồn tại!'
+                });
+            }
+
+            if ((quantity || 0) > productSizeDetailFound.quantity) {
+                return res.status(400).json({
+                    success: 0,
+                    data: null,
+                    message: 'Số lượng sản phẩm trong kho không còn đủ!'
+                });
+            }
+
             await Carts.updateOne({ id })
                 .set({
                     product_id: product_id || cartItemFound.product_id,
@@ -177,12 +195,30 @@ module.exports = {
                 .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                 .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf()) : [];
 
+            const productSizeDetailFound = await ProductSizeDetails.findOne({ id: product_size_detail_id });
+
+            if (!productSizeDetailFound || !productSizeDetailFound.id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Thông số sản phẩm không tồn tại!'
+                });
+            }
+
             const cartItemFound = await Carts.findOne({
                 product_id,
                 product_detail_id,
                 product_size_detail_id,
                 cart_id: req.session.id,
             });
+
+            if ((quantity + (cartItemFound && cartItemFound.id ? cartItemFound.quantity : 0)) > productSizeDetailFound.quantity) {
+                return res.status(400).json({
+                    success: 0,
+                    data: null,
+                    message: 'Số lượng sản phẩm trong kho không còn đủ!'
+                });
+            }
 
             if (cartItemFound && cartItemFound.id) {
                 await Carts.updateOne({ id: cartItemFound.id })

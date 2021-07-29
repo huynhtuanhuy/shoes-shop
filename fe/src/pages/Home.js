@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
+import * as networks from '../networks';
 import * as actions from '../actions';
 
 const baseUrl = process.env.REACT_APP_API_BASE_URL;
@@ -168,7 +170,32 @@ class Home extends Component {
         }
     }
 
+    toggleFavorite = async (e, product) => {
+        e.preventDefault();
+
+        try {
+            if (product.is_favorite) {
+                await networks.deleteProductFavorites(product.id);
+                this.props.getTopNewProducts();
+                this.props.getTopFeaturedProducts();
+                this.props.getTopViewProducts();
+                this.props.getTopSalesProducts();
+                toast.success("Xóa sản phẩm khỏi danh sách yêu thích thành công!");
+            } else {
+                await networks.createProductFavorites({ product_id: product.id });
+                this.props.getTopNewProducts();
+                this.props.getTopFeaturedProducts();
+                this.props.getTopViewProducts();
+                this.props.getTopSalesProducts();
+                toast.success("Thêm sản phẩm vào danh sách yêu thích thành công!");
+            }
+        } catch (error) {
+            toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Thêm sản phẩm vào danh sách yêu thích chưa thành công!');
+        }
+    }
+
     renderProduct = (product) => {
+        const { isAuth } = this.props;
         return (
             <div key={product.id} className="col-md-12">
                 <div className="single-product">
@@ -195,14 +222,41 @@ class Home extends Component {
                     <div className="product-name">
                         <Link to={`/product/${product.slug}`}>{product.name}</Link>
                     </div>
-                    <div className="price-rating">
-                        <span className={product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? 'old-price' : ''}>
-                            {product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VND` : '0 VND'}
-                        </span>
-                        <br/>
-                        {product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? (
-                            <span>{Number(product.product_details[0].sales[0].sale_price).toLocaleString()} VND</span>
-                        ) : <span>&nbsp;</span>}
+                    <div className="price-rating row">
+                        <div className="col-md-6">
+                            <span className={product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? 'old-price' : ''}>
+                                {product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VND` : '0 VND'}
+                            </span>
+                            <br />
+                            {product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? (
+                                <span>{Number(product.product_details[0].sales[0].sale_price).toLocaleString()} VND</span>
+                            ) : <span>&nbsp;</span>}
+                        </div>
+                        <div className="col-md-6">
+                            {isAuth && (
+                                <div className="action">
+                                    <ul className="add-to-links text-right">
+                                        <li>
+                                            <a className={product.is_favorite ? "active" : ""} href="#" onClick={(e) => this.toggleFavorite(e, product)}>
+                                                <i className="fa fa-heart" />
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            ) || (
+                                    <div className="action">
+                                        <ul className="add-to-links text-right">
+                                            <li>
+                                                <a href="#" onClick={(e) => {
+                                                    e.preventDefault();
+                                                    toast.error('Vui lòng đăng nhập để sử dụng chức năng này!');
+                                                }}>
+                                                    <i className="fa fa-heart" />
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>)}
+                        </div>
                     </div>
                     <div className="actions text-center">
                         <Link to={`/product/${product.slug}`}>
@@ -314,7 +368,7 @@ class Home extends Component {
                             </div>
                         </div>
                     </div>
-                    <br/>
+                    <br />
                     <div className="testimonial-area">
                         <div className="container">
                             <div className="row">
@@ -369,6 +423,7 @@ const mapStateToProps = (state) => {
         topNewProducts: state.products.topNewProducts,
         topFeaturedProducts: state.products.topFeaturedProducts,
         topSalesProducts: state.products.topSalesProducts,
+        isAuth: state.auth.isAuth,
     }
 }
 
