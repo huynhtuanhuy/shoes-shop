@@ -190,6 +190,11 @@ module.exports = {
 
             const now = moment().valueOf();
 
+            await Products.updateOne({ id: productFound.id })
+                .set({
+                    views: productFound.views + 1,
+                });
+
             res.json({
                 success: 1,
                 data: {
@@ -366,9 +371,11 @@ module.exports = {
     },
     topSalesProducts: async (req, res) => {
         try {
-            const productSaleData = await ProductDetailSales.find({})
-                .sort([{ created_at: 'DESC' }]);
-
+            const productSaleData = await ProductDetailSales.find({
+                start_date: { '<=': moment().startOf('date').toISOString() },
+                end_date: { '>=': moment().endOf('date').toISOString() },
+            }).sort([{ created_at: 'DESC' }]);
+            console.log(productSaleData);
             const productIds = [];
 
             for (let i = 0; i < productSaleData.length; i++) {
@@ -493,7 +500,7 @@ module.exports = {
     },
     topViewProducts: async (req, res) => {
         try {
-            const productData = await Products.find({ is_disable: false })
+            const productData = await Products.find({ is_disable: false, views: { '>': 0 } })
                 .limit(10)
                 .sort([{ views: 'DESC' }])
                 .populate('product_details')

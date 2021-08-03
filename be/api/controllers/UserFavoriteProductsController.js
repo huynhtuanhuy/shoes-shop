@@ -62,6 +62,7 @@ module.exports = {
                     page: Number(page),
                     total: total,
                     perPage: Number(perPage),
+                    totalPage: Math.ceil(Number(total) / Number(perPage)),
                 },
                 message: '',
             });

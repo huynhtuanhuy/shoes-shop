@@ -52,7 +52,7 @@ class Favorites extends Component {
     render() {
         const { page } = this.state;
         const { favoriteProducts, isAuth } = this.props;
-
+        console.log(favoriteProducts)
         return (
             <div>
                 <div className="product-banner">

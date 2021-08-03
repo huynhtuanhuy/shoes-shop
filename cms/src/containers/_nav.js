@@ -50,12 +50,12 @@ const _nav =  [
     to: '/users',
     icon: <CIcon name="cil-user" customClasses="c-sidebar-nav-icon"/>,
   },
-  {
-    _tag: 'CSidebarNavItem',
-    name: 'Thống kê',
-    to: '/statistics',
-    icon: <CIcon name="cil-chart-line" customClasses="c-sidebar-nav-icon"/>,
-  },
+  // {
+  //   _tag: 'CSidebarNavItem',
+  //   name: 'Thống kê',
+  //   to: '/statistics',
+  //   icon: <CIcon name="cil-chart-line" customClasses="c-sidebar-nav-icon"/>,
+  // },
   // {
   //   _tag: 'CSidebarNavTitle',
   //   _children: ['Theme']
