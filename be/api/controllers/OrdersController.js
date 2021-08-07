@@ -128,13 +128,13 @@ module.exports = {
                 });
             }
 
-            if (orderFound.status == 'shipping') {
-                return res.status(400).json({
-                    success: 0,
-                    data: null,
-                    message: 'Đơn hàng hiện đang được giao!'
-                });
-            }
+            // if (orderFound.status == 'shipping') {
+            //     return res.status(400).json({
+            //         success: 0,
+            //         data: null,
+            //         message: 'Đơn hàng hiện đang được giao!'
+            //     });
+            // }
 
             await Orders.updateOne({ id })
                 .set({

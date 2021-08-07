@@ -149,7 +149,7 @@ class EditOrders extends Component {
         const { loading } = this.props;
         const { productOptions } = this.state;
         const { customer_fullname, customer_phone, customer_email, customer_address, status, order_product_details } = this.state.formData;
-
+        
         return (
             <CRow>
                 <CCol xs="12">
@@ -161,23 +161,23 @@ class EditOrders extends Component {
                             <CForm onSubmit={this.handleSubmit} id="new-form" className="form-horizontal">
                                 <CFormGroup>
                                     <CLabel htmlFor="customer_fullname">Tên khách hàng</CLabel>
-                                    <CInput value={customer_fullname} onChange={this.handleChange} required id="customer_fullname" name="customer_fullname" placeholder="Nhập tên khách hàng" />
+                                    <CInput disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} value={customer_fullname} onChange={this.handleChange} required id="customer_fullname" name="customer_fullname" placeholder="Nhập tên khách hàng" />
                                 </CFormGroup>
                                 <CFormGroup>
                                     <CLabel htmlFor="customer_phone">Số điện thoại khách hàng</CLabel>
-                                    <CInput value={customer_phone} onChange={this.handleChange} required id="customer_phone" name="customer_phone" placeholder="Nhập số điện thoại khách hàng" />
+                                    <CInput disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} value={customer_phone} onChange={this.handleChange} required id="customer_phone" name="customer_phone" placeholder="Nhập số điện thoại khách hàng" />
                                 </CFormGroup>
                                 <CFormGroup>
                                     <CLabel htmlFor="customer_email">Email khách hàng</CLabel>
-                                    <CInput type="email" value={customer_email} onChange={this.handleChange} required id="customer_email" name="customer_email" placeholder="Nhập email khách hàng" />
+                                    <CInput disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} type="email" value={customer_email} onChange={this.handleChange} required id="customer_email" name="customer_email" placeholder="Nhập email khách hàng" />
                                 </CFormGroup>
                                 <CFormGroup>
                                     <CLabel htmlFor="customer_address">Địa chỉ khách hàng</CLabel>
-                                    <CInput value={customer_address} onChange={this.handleChange} required id="customer_address" name="customer_address" placeholder="Nhập địa chỉ khách hàng" />
+                                    <CInput disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} value={customer_address} onChange={this.handleChange} required id="customer_address" name="customer_address" placeholder="Nhập địa chỉ khách hàng" />
                                 </CFormGroup>
                                 <CFormGroup>
                                     <CLabel htmlFor="status">Trạng thái đơn hàng:</CLabel>
-                                    <CSelect custom value={status} onChange={this.handleNormalSelectChange} name="status" id="status">
+                                    <CSelect disabled={['accomplished', 'cancelled'].includes(status)} custom value={status} onChange={this.handleNormalSelectChange} name="status" id="status">
                                         <option value="pending">Chờ xử lý</option>
                                         <option value="processing">Đang xử lý</option>
                                         <option value="packed">Đã đóng gói</option>
@@ -218,7 +218,7 @@ class EditOrders extends Component {
                                                             <CCol xs="4">
                                                                 <CFormGroup>
                                                                     <CLabel htmlFor="product_detail_id">Màu sản phẩm:</CLabel>
-                                                                    <CSelect required custom value={order_product_details[index].product_detail_id} onChange={(e) => {
+                                                                    <CSelect disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} required custom value={order_product_details[index].product_detail_id} onChange={(e) => {
                                                                         this.handleNormalSelectChange(e);
                                                                         const currentProductDetail = currentProduct && currentProduct.product_details && currentProduct.product_details.filter(item => item.id == e.target.value)[0] || null;
                                                                         this.handleChange({ target: { name: `order_product_details[${index}].sale_price`, value: currentProductDetail.sales && currentProductDetail.sales[0] && currentProductDetail.sales[0].sale_price || 0 } });
@@ -233,7 +233,7 @@ class EditOrders extends Component {
                                                             <CCol xs="4">
                                                                 <CFormGroup>
                                                                     <CLabel htmlFor="product_size_detail_id">Size sản phẩm:</CLabel>
-                                                                    <CSelect required custom value={order_product_details[index].product_size_detail_id} onChange={this.handleNormalSelectChange} name={`order_product_details[${index}].product_size_detail_id`}>
+                                                                    <CSelect disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} required custom value={order_product_details[index].product_size_detail_id} onChange={this.handleNormalSelectChange} name={`order_product_details[${index}].product_size_detail_id`}>
                                                                         <option value="">Chọn size</option>
                                                                         {currentProduct && currentProduct.product_details
                                                                          && currentProduct.product_details.filter(product_detail => product_detail.id == order_product_details[index].product_detail_id)[0]
@@ -245,7 +245,7 @@ class EditOrders extends Component {
                                                             <CCol xs="4">
                                                                 <CFormGroup>
                                                                     <CLabel htmlFor="quantity">Số lượng</CLabel>
-                                                                    <CInput value={order_product_details[index].quantity} onChange={this.handleChange} required name={`order_product_details[${index}].quantity`} placeholder="Nhập số lượng sản phẩm" />
+                                                                    <CInput disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} value={order_product_details[index].quantity} onChange={this.handleChange} required name={`order_product_details[${index}].quantity`} placeholder="Nhập số lượng sản phẩm" />
                                                                 </CFormGroup>
                                                             </CCol>
                                                             <CCol xs="4">
@@ -262,16 +262,16 @@ class EditOrders extends Component {
                                                             </CCol>
                                                         </CFormGroup>
                                                     </CCardBody>
-                                                    <CCardFooter className="text-right">
+                                                    {!['shipping', 'accomplished', 'cancelled'].includes(status) && <CCardFooter className="text-right">
                                                         <CButton disabled={loading} onClick={() => this.handleRemoveProduct(index)} type="reset" size="sm" color="danger"><CIcon name="cil-ban" /> Xóa sản phẩm</CButton>
-                                                    </CCardFooter>
+                                                    </CCardFooter>}
                                                 </CCard>
                                             );
                                         })}
                                     </div>
-                                    <div className="text-center">
+                                    {!['shipping', 'accomplished', 'cancelled'].includes(status) && <div className="text-center">
                                         <CButton disabled={loading} onClick={this.handleAddNewProduct} size="sm" color="primary"><CIcon name="cil-plus" /> Thêm sản phẩm</CButton>
-                                    </div>
+                                    </div>}
                                 </CFormGroup>
                             </CForm>
                         </CCardBody>

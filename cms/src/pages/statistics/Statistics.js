@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import {
   CCard,
@@ -8,24 +7,10 @@ import {
   CCardHeader,
   CCol,
   CRow,
-  CBadge,
-  CDataTable,
-  CModal,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-  CButton,
-  CSwitch,
 } from '@coreui/react'
 import {
-  CChartBar,
   CChartLine,
-  CChartDoughnut,
-  CChartRadar,
-  CChartPie,
-  CChartPolarArea
 } from '@coreui/react-chartjs'
-import { DocsLink } from 'src/reusable'
 import DatePicker from 'react-date-picker';
 import moment from 'moment'
 import _ from 'lodash'
