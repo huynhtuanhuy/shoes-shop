@@ -48,10 +48,6 @@ module.exports = {
       collection: 'ProductCategories',
       via: 'product_id',
     },
-    product_details: {
-      collection: 'ProductDetails',
-      via: 'product_id',
-    },
     images: {
       collection: 'ProductDetailImages',
       via: 'product_id',

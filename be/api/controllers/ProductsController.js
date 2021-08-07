@@ -8,10 +8,10 @@
 const slug = require('slug');
 const moment = require('moment');
 
- module.exports = {
+module.exports = {
     options: async (req, res) => {
         try {
-            const productData = await Products.find({}).populate('categories').populate('product_details');
+            const productData = await Products.find({}).populate('categories');
 
             const categories = await ProductCategories.find({
                 id: {
@@ -23,15 +23,10 @@ const moment = require('moment');
                     }, [])
                 }
             });
-            
+
             const product_details = await ProductDetails.find({
-                id: {
-                    in: productData.reduce((total, item) => {
-                        return [
-                            ...total,
-                            ...(item.product_details || []).map(product_detail => product_detail.id)
-                        ]
-                    }, [])
+                product_id: {
+                    in: productData.map(product => product.id),
                 }
             }).populate('color_id').populate('sizes').populate('sales');
 
@@ -54,7 +49,7 @@ const moment = require('moment');
                                 category: categories.filter(item => item.id == category.category_id)[0],
                             }
                         }),
-                        product_details: product_details.filter(item => product.product_details.map(_item => _item.id).includes(item.id)).sort((a, b) => b.sales.length - a.sales.length).map(item => {
+                        product_detail: product_details.filter(item => item.product_id = product.id).sort((a, b) => b.sales.length - a.sales.length).map(item => {
                             return {
                                 ...item,
                                 sizes: product_size_details.filter(size => item.sizes.map(_item => _item.id).includes(size.id)),
@@ -62,7 +57,7 @@ const moment = require('moment');
                                     .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                                     .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
                             }
-                        }),
+                        })[0],
                     }
                 }),
                 message: '',
@@ -95,8 +90,13 @@ const moment = require('moment');
                 .limit(Number(perPage))
                 .skip((Number(page) - 1) * Number(perPage))
                 .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : [])
-                .populate('categories')
-                .populate('product_details');
+                .populate('categories');
+
+            const product_details = await ProductDetails.find({
+                product_id: {
+                    in: productData.map(product => product.id),
+                }
+            });
 
             const categories = await Categories.find({
                 id: {
@@ -120,7 +120,8 @@ const moment = require('moment');
                                     ...category,
                                     category: categories.filter(item => item.id == category.category_id)[0],
                                 }
-                            })
+                            }),
+                            product_detail: product_details.filter(item => item.product_id = product.id).sort((a, b) => b.sales.length - a.sales.length)[0],
                         }
                     }),
                     page: Number(page),
@@ -146,7 +147,7 @@ const moment = require('moment');
                 id,
             };
 
-            const productFound = await Products.findOne(query).populate('categories').populate('product_details').populate('images');
+            const productFound = await Products.findOne(query).populate('categories').populate('images');
 
             if (!productFound || !productFound.id) {
                 return res.status(404).json({
@@ -162,16 +163,12 @@ const moment = require('moment');
                 }
             }).populate('category_id');
 
-            const product_details = await ProductDetails.find({
-                id: {
-                    in: productFound.product_details.map(item => item.id),
-                }
+            const product_detail = await ProductDetails.findOne({
+                product_id: productFound.id
             }).populate('color_id').populate('sizes');
 
             const sizes = await ProductSizeDetails.find({
-                id: {
-                    in: product_details.reduce((total, item) => [...total, ...item.sizes.map(sizeItem => sizeItem.id)], []),
-                }
+                id: product_detail && product_detail.sizes && product_detail.sizes.map(sizeItem => sizeItem.id) || [],
             }).populate('size_id');
 
             return res.json({
@@ -179,12 +176,10 @@ const moment = require('moment');
                 data: {
                     ...productFound,
                     categories,
-                    product_details: product_details.map(product_detail => {
-                        return {
-                            ...product_detail,
-                            sizes: sizes.filter(size => size.product_detail_id == product_detail.id)
-                        }
-                    }),
+                    product_detail: {
+                        ...product_detail,
+                        sizes,
+                    },
                 },
                 message: '',
             });
@@ -236,14 +231,14 @@ const moment = require('moment');
     },
     update: async (req, res) => {
         const { id } = req.params;
-        const { name, is_disable, description, is_new, category_parent, categories, product_details, images } = req.body;
+        const { name, is_disable, description, is_new, category_parent, categories, product_detail, images } = req.body;
 
         try {
             const query = {
                 id,
             };
 
-            const productFound = await Products.findOne(query).populate('categories').populate('product_details').populate('images');
+            const productFound = await Products.findOne(query).populate('categories').populate('images');
 
             if (!productFound || !productFound.id) {
                 return res.status(404).json({
@@ -275,7 +270,7 @@ const moment = require('moment');
                         in: imagesToDelete
                     }
                 });
-    
+
                 for (let i = 0; i < images.length; i++) {
                     if (!images[i].id) {
                         const productDetailImageCreated = await ProductDetailImages.create({
@@ -299,7 +294,7 @@ const moment = require('moment');
                         in: categoriesToDelete
                     }
                 });
-    
+
                 for (let i = 0; i < categories.length; i++) {
                     if (!productFound.categories.map(category => category.category_id).includes(categories[i])) {
                         await ProductCategories.create({
@@ -310,53 +305,59 @@ const moment = require('moment');
                 }
             }
 
-            if (product_details) {
-                for (let i = 0; i < product_details.length; i++) {
-                    const product_detail = product_details[i];
+            if (product_detail) {
+                if (!product_detail.id) {
+                    const productDetailFound = await ProductDetails.findOne({
+                        product_id: productFound.id
+                    }).populate('color_id').populate('sizes');
 
-                    if (!product_detail.id) {
-                        const productDetailCreated = await ProductDetails.create({
-                            product_id: productFound.id,
-                            color_id: product_detail.color_id,
-                            price: product_detail.price,
-                        }).fetch();
-
-                        if (product_detail.sizes && product_detail.sizes.length > 0) {
-                            for (let j = 0; j < product_detail.sizes.length; j++) {
-                                const size_detail = product_detail.sizes[j];
-                        
-                                const productSizeDetailCreated = await ProductSizeDetails.create({
-                                    product_detail_id: productDetailCreated.id,
-                                    size_id: size_detail.size_id,
-                                    quantity: size_detail.quantity,
-                                }).fetch();
-                            }
-                        }
-                    } else {
-                        await ProductDetails.updateOne({
-                            id: product_detail.id
-                        }).set({
-                            color_id: product_detail.color_id,
-                            price: product_detail.price,
+                    if (productDetailFound && productDetailFound.id) {
+                        await ProductDetails.destroy({
+                            id: productDetailFound.id,
                         });
+                    }
 
+                    const productDetailCreated = await ProductDetails.create({
+                        product_id: productFound.id,
+                        color_id: product_detail.color_id,
+                        price: product_detail.price,
+                    }).fetch();
+
+                    if (product_detail.sizes && product_detail.sizes.length > 0) {
                         for (let j = 0; j < product_detail.sizes.length; j++) {
-                            const product_size_detail = product_detail.sizes[j];
-                            
-                            if (!product_size_detail.id) {
-                                const productSizeDetailCreated = await ProductSizeDetails.create({
-                                    product_detail_id: product_detail.id,
-                                    size_id: product_size_detail.size_id,
-                                    quantity: product_size_detail.quantity,
-                                }).fetch();
-                            } else {
-                                await ProductSizeDetails.updateOne({
-                                    id: product_size_detail.id
-                                }).set({
-                                    size_id: product_size_detail.size_id,
-                                    quantity: product_size_detail.quantity,
-                                });
-                            }
+                            const size_detail = product_detail.sizes[j];
+
+                            const productSizeDetailCreated = await ProductSizeDetails.create({
+                                product_detail_id: productDetailCreated.id,
+                                size_id: size_detail.size_id,
+                                quantity: size_detail.quantity,
+                            }).fetch();
+                        }
+                    }
+                } else {
+                    await ProductDetails.updateOne({
+                        id: product_detail.id
+                    }).set({
+                        color_id: product_detail.color_id,
+                        price: product_detail.price,
+                    });
+
+                    for (let j = 0; j < product_detail.sizes.length; j++) {
+                        const product_size_detail = product_detail.sizes[j];
+
+                        if (!product_size_detail.id) {
+                            const productSizeDetailCreated = await ProductSizeDetails.create({
+                                product_detail_id: product_detail.id,
+                                size_id: product_size_detail.size_id,
+                                quantity: product_size_detail.quantity,
+                            }).fetch();
+                        } else {
+                            await ProductSizeDetails.updateOne({
+                                id: product_size_detail.id
+                            }).set({
+                                size_id: product_size_detail.size_id,
+                                quantity: product_size_detail.quantity,
+                            });
                         }
                     }
                 }
@@ -379,7 +380,7 @@ const moment = require('moment');
         }
     },
     create: async (req, res) => {
-        const { name, description, is_new, is_disable, category_parent, categories, product_details, images } = req.body;
+        const { name, description, is_new, is_disable, category_parent, categories, product_detail, images } = req.body;
         try {
             const lastProduct = await Products.find({}).sort('id DESC').limit(1);
 
@@ -402,9 +403,7 @@ const moment = require('moment');
                 });
             }
 
-            for (let i = 0; i < product_details.length; i++) {
-                const product_detail = product_details[i];
-                
+            if (product_detail) {
                 const productDetailCreated = await ProductDetails.create({
                     product_id: productCreated.id,
                     color_id: product_detail.color_id,
@@ -414,7 +413,7 @@ const moment = require('moment');
                 if (product_detail.sizes && product_detail.sizes.length > 0) {
                     for (let j = 0; j < product_detail.sizes.length; j++) {
                         const size_detail = product_detail.sizes[j];
-                
+
                         const productSizeDetailCreated = await ProductSizeDetails.create({
                             product_detail_id: productDetailCreated.id,
                             size_id: size_detail.size_id,
@@ -426,7 +425,7 @@ const moment = require('moment');
 
             for (let i = 0; i < images.length; i++) {
                 const imageUrl = images[i];
-                
+
                 const productDetailImageCreated = await ProductDetailImages.create({
                     product_id: productCreated.id,
                     image_path: imageUrl,

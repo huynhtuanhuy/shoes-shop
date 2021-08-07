@@ -9,6 +9,7 @@ module.exports = {
   attributes: {
     product_id: {
       model: 'Products',
+      unique: true,
     },
     
     color_id: {
