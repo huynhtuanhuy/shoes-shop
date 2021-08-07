@@ -35,7 +35,16 @@ class NewProducts extends Component {
             is_new: false,
             is_disable: false,
             categories: [],
-            product_details: [],
+            product_detail: {
+                color_id: '',
+                price: 0,
+                sizes: [
+                    {
+                        size_id: '',
+                        quantity: 0,
+                    }
+                ]
+            },
             images: [],
             category_parent: '',
         },
@@ -70,10 +79,12 @@ class NewProducts extends Component {
                 });
                 this.setState({ categoryOptions: parent }, () => {
                     if (parent[0] && parent[0].value) {
-                        this.setState({ formData: {
-                            ...this.state.formData,
-                            category_parent: parent[0].value,
-                        } });
+                        this.setState({
+                            formData: {
+                                ...this.state.formData,
+                                category_parent: parent[0].value,
+                            }
+                        });
                     }
                 });
             }
@@ -89,7 +100,7 @@ class NewProducts extends Component {
         const newFormData = { ...formData };
         _.set(newFormData, name, value);
 
-        if(name == 'category_parent') {
+        if (name == 'category_parent') {
             _.set(newFormData, 'categories', []);
         }
 
@@ -135,7 +146,7 @@ class NewProducts extends Component {
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        const { name, sku, description, is_new, is_disable, categories, product_details, images, category_parent } = this.state.formData;
+        const { name, sku, description, is_new, is_disable, categories, product_detail, images, category_parent } = this.state.formData;
 
         const formData = new FormData();
         for (let i = 0; i < images.length; i++) {
@@ -143,55 +154,21 @@ class NewProducts extends Component {
             formData.append("files", imageFile);
         }
         const uploadImageResponse = await networks.uploadFile(formData);
-        
+
         let imageUrls = [];
         if (uploadImageResponse.data && uploadImageResponse.data.data && uploadImageResponse.data.data.urls) {
             imageUrls = uploadImageResponse.data.data.urls;
         }
 
-        this.props.createProduct({ name, sku, description, is_new, is_disable, categories, product_details, images: imageUrls, category_parent }, () => {
+        this.props.createProduct({ name, sku, description, is_new, is_disable, categories, product_detail, images: imageUrls, category_parent }, () => {
             this.props.history.push('/products');
         });
     }
 
-    handleAddNewDetail = () => {
+    handleAddNewSizeDetail = () => {
         const { formData } = this.state;
 
-        this.setState({
-            formData: {
-                ...formData,
-                product_details: [
-                    ...formData.product_details,
-                    {
-                        color_id: '',
-                        price: 0,
-                        sizes: [
-                            {
-                                size_id: '',
-                                quantity: 0,
-                            }
-                        ]
-                    }
-                ]
-            }
-        });
-    }
-
-    handleRemoveDetail = (removeIndex) => {
-        const { formData } = this.state;
-
-        this.setState({
-            formData: {
-                ...formData,
-                product_details: formData.product_details.filter((item, index) => index != removeIndex)
-            }
-        });
-    }
-
-    handleAddNewSizeDetail = (detailIndex) => {
-        const { formData } = this.state;
-
-        formData.product_details[detailIndex].sizes.push({
+        formData.product_detail.sizes.push({
             size_id: '',
             quantity: 0,
         });
@@ -201,11 +178,11 @@ class NewProducts extends Component {
         });
     }
 
-    handleRemoveSizeDetail = (detailIndex, removeIndex) => {
+    handleRemoveSizeDetail = (removeIndex) => {
         const { formData } = this.state;
 
         const newFormData = { ...formData };
-        newFormData.product_details[detailIndex].sizes = newFormData.product_details[detailIndex].sizes.filter((item, index) => index != removeIndex)
+        newFormData.product_detail.sizes = newFormData.product_detail.sizes.filter((item, index) => index != removeIndex)
 
         this.setState({
             formData,
@@ -235,7 +212,7 @@ class NewProducts extends Component {
     render() {
         const { loading } = this.props;
         const { categoryOptions, colorOptions, sizeOptions } = this.state;
-        const { name, sku, description, is_new, is_disable, categories, product_details, images, category_parent } = this.state.formData;
+        const { name, sku, description, is_new, is_disable, categories, product_detail, images, category_parent } = this.state.formData;
 
         const currentParentCategory = categoryOptions.filter(item => item.value == category_parent)[0] || categoryOptions[0];
         const _categoryOptions = currentParentCategory && currentParentCategory.children || [];
@@ -314,66 +291,58 @@ class NewProducts extends Component {
                                     />
                                 </CFormGroup>
                                 <CFormGroup>
-                                    <CLabel htmlFor="product_details">Thông số sản phẩm</CLabel>
+                                    <CLabel htmlFor="product_detail">Thông số sản phẩm</CLabel>
                                     <div>
-                                        {product_details.map((_, index) => (
-                                            <CCard key={index}>
-                                                <CCardBody>
-                                                    <CFormGroup row className="my-0">
-                                                        <CCol xs="6">
-                                                            <CFormGroup>
-                                                                <CLabel htmlFor="color_id">Màu sản phẩm</CLabel>
-                                                                <CSelect required value={product_details[index].color_id} onChange={this.handleNormalSelectChange} id="color_id" name={`product_details[${index}].color_id`}>
-                                                                    <option value="">Chọn màu sản phẩm</option>
-                                                                    {colorOptions.map(color => <option key={color.id} value={color.id}>{color.color_name}</option>)}
-                                                                </CSelect>
+                                        <CCard>
+                                            <CCardBody>
+                                                <CFormGroup row className="my-0">
+                                                    <CCol xs="6">
+                                                        <CFormGroup>
+                                                            <CLabel htmlFor="color_id">Màu sản phẩm</CLabel>
+                                                            <CSelect required value={product_detail.color_id} onChange={this.handleNormalSelectChange} id="color_id" name={`product_detail.color_id`}>
+                                                                <option value="">Chọn màu sản phẩm</option>
+                                                                {colorOptions.map(color => <option key={color.id} value={color.id}>{color.color_name}</option>)}
+                                                            </CSelect>
+                                                        </CFormGroup>
+                                                    </CCol>
+                                                    <CCol xs="6">
+                                                        <CFormGroup>
+                                                            <CLabel htmlFor="price">Giá sản phẩm</CLabel>
+                                                            <CInput type="number" value={product_detail.price} onChange={this.handleChange} required id="price" name={`product_detail.price`} placeholder="Nhập giá sản phẩm" />
+                                                        </CFormGroup>
+                                                    </CCol>
+                                                </CFormGroup>
+                                                {product_detail.sizes && product_detail.sizes.map((_, sizeIndex) => (
+                                                    <CCard key={sizeIndex}>
+                                                        <CCardBody>
+                                                            <CFormGroup row className="my-0">
+                                                                <CCol xs="6">
+                                                                    <CFormGroup>
+                                                                        <CLabel htmlFor="size">Kích cỡ</CLabel>
+                                                                        <CSelect required value={product_detail.sizes[sizeIndex].size_id} onChange={this.handleNormalSelectChange} id="size_id" name={`product_detail.sizes[${sizeIndex}].size_id`}>
+                                                                            <option value="">Chọn size sản phẩm</option>
+                                                                            {sizeOptions.map(size => <option key={size.id} value={size.id}>{size.size}</option>)}
+                                                                        </CSelect>
+                                                                    </CFormGroup>
+                                                                </CCol>
+                                                                <CCol xs="6">
+                                                                    <CFormGroup>
+                                                                        <CLabel htmlFor="quantity">Số lượng</CLabel>
+                                                                        <CInput type="number" value={product_detail.sizes[sizeIndex].quantity} onChange={this.handleChange} required id="quantity" name={`product_detail.sizes[${sizeIndex}].quantity`} placeholder="Nhập số lượng" />
+                                                                    </CFormGroup>
+                                                                </CCol>
                                                             </CFormGroup>
-                                                        </CCol>
-                                                        <CCol xs="6">
-                                                            <CFormGroup>
-                                                                <CLabel htmlFor="price">Giá sản phẩm</CLabel>
-                                                                <CInput type="number" value={product_details[index].price} onChange={this.handleChange} required id="price" name={`product_details[${index}].price`} placeholder="Nhập giá sản phẩm" />
-                                                            </CFormGroup>
-                                                        </CCol>
-                                                    </CFormGroup>
-                                                    {product_details[index].sizes && product_details[index].sizes.map((_, sizeIndex) => (
-                                                        <CCard key={sizeIndex}>
-                                                            <CCardBody>
-                                                                <CFormGroup row className="my-0">
-                                                                    <CCol xs="6">
-                                                                        <CFormGroup>
-                                                                            <CLabel htmlFor="size">Kích cỡ</CLabel>
-                                                                            <CSelect required value={product_details[index].sizes[sizeIndex].size_id} onChange={this.handleNormalSelectChange} id="size_id" name={`product_details[${index}].sizes[${sizeIndex}].size_id`}>
-                                                                                <option value="">Chọn size sản phẩm</option>
-                                                                                {sizeOptions.map(size => <option key={size.id} value={size.id}>{size.size}</option>)}
-                                                                            </CSelect>
-                                                                        </CFormGroup>
-                                                                    </CCol>
-                                                                    <CCol xs="6">
-                                                                        <CFormGroup>
-                                                                            <CLabel htmlFor="quantity">Số lượng</CLabel>
-                                                                            <CInput type="number" value={product_details[index].sizes[sizeIndex].quantity} onChange={this.handleChange} required id="quantity" name={`product_details[${index}].sizes[${sizeIndex}].quantity`} placeholder="Nhập số lượng" />
-                                                                        </CFormGroup>
-                                                                    </CCol>
-                                                                </CFormGroup>
-                                                            </CCardBody>
-                                                            <CCardFooter className="text-right">
-                                                                <CButton disabled={loading || (product_details[index].sizes && product_details[index].sizes.length <= 1)} onClick={() => this.handleRemoveSizeDetail(index, sizeIndex)} type="reset" size="sm" color="danger"><CIcon name="cil-ban" /> Xóa size</CButton>
-                                                            </CCardFooter>
-                                                        </CCard>
-                                                    ))}
-                                                    <div className="text-center">
-                                                        <CButton disabled={loading} onClick={() => this.handleAddNewSizeDetail(index)} size="sm" color="primary"><CIcon name="cil-plus" /> Thêm size</CButton>
-                                                    </div>
-                                                </CCardBody>
-                                                <CCardFooter className="text-right">
-                                                    <CButton disabled={loading} onClick={() => this.handleRemoveDetail(index)} type="reset" size="sm" color="danger"><CIcon name="cil-ban" /> Xóa thông số</CButton>
-                                                </CCardFooter>
-                                            </CCard>
-                                        ))}
-                                        <div className="text-center">
-                                            <CButton disabled={loading} onClick={this.handleAddNewDetail} size="sm" color="primary"><CIcon name="cil-plus" /> Thêm thông số</CButton>
-                                        </div>
+                                                        </CCardBody>
+                                                        <CCardFooter className="text-right">
+                                                            <CButton disabled={loading || (product_detail.sizes && product_detail.sizes.length <= 1)} onClick={() => this.handleRemoveSizeDetail(sizeIndex)} type="reset" size="sm" color="danger"><CIcon name="cil-ban" /> Xóa size</CButton>
+                                                        </CCardFooter>
+                                                    </CCard>
+                                                ))}
+                                                <div className="text-center">
+                                                    <CButton disabled={loading} onClick={() => this.handleAddNewSizeDetail()} size="sm" color="primary"><CIcon name="cil-plus" /> Thêm size</CButton>
+                                                </div>
+                                            </CCardBody>
+                                        </CCard>
                                     </div>
                                 </CFormGroup>
                             </CForm>
