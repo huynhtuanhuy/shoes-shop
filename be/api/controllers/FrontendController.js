@@ -159,7 +159,7 @@ module.exports = {
         try {
             const productFound = await Products.findOne({
                 slug: productSlug,
-            }).populate('images').populate('product_details');
+            }).populate('images');
 
             if (!productFound || !productFound.id) {
                 return res.status(404).json({
@@ -169,15 +169,12 @@ module.exports = {
                 });
             }
 
-            const productDetails = await ProductDetails.find({
-                id: productFound.product_details.map(item => item.id)
+            const productDetail = await ProductDetails.findOne({
+                product_id: productFound.id
             }).populate('color_id').populate('sizes').populate('sales');
 
             const productSizeDetails = await ProductSizeDetails.find({
-                id: productDetails.reduce((total, item) => [
-                    ...total,
-                    ...item.sizes.map(size => size.id),
-                ], [])
+                id: productDetail.sizes.map(size => size.id)
             }).populate('size_id')
 
             let productFavorite = null;
@@ -200,17 +197,15 @@ module.exports = {
                 data: {
                     ...productFound,
                     is_favorite: productFavorite && productFavorite.id ? true : false,
-                    product_details: productDetails.filter(productDetail => productDetail.product_id == productFound.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
-                        return {
-                            ...productDetail,
-                            sales: productDetail.sales
-                                .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
-                                .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf()),
-                            sizes: productSizeDetails.filter(_item => {
-                                return productDetail.sizes.map(size => size.id).includes(_item.id);
-                            }),
-                        }
-                    })
+                    product_detail: {
+                        ...productDetail,
+                        sales: productDetail.sales
+                            .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
+                            .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf()),
+                        sizes: productSizeDetails.filter(_item => {
+                            return productDetail.sizes.map(size => size.id).includes(_item.id);
+                        }),
+                    }
                 },
                 message: '',
             });
@@ -283,7 +278,6 @@ module.exports = {
                 .limit(Number(perPage))
                 .skip((Number(page) - 1) * Number(perPage))
                 .sort(sorted)
-                .populate('product_details')
                 .populate('images');
 
             const now = moment().valueOf();
@@ -302,14 +296,14 @@ module.exports = {
                 productData[i] = {
                     ...product,
                     is_favorite: productFavorite && productFavorite.id ? true : false,
-                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                    product_detail: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
                         return {
                             ...productDetail,
                             sales: productDetail.sales
                                 .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                                 .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
                         }
-                    }),
+                    })[0],
                 };
             }
 
@@ -387,16 +381,12 @@ module.exports = {
             const productData = await Products.find({ is_disable: false, id: productIds })
                 .limit(10)
                 .sort([{ sold: 'DESC' }])
-                .populate('product_details')
                 .populate('images');
 
             const productDetails = await ProductDetails.find({
-                id: productData.reduce((total, product) => {
-                    return [
-                        ...total,
-                        ...product.product_details.map(item => item.id)
-                    ];
-                }, [])
+                product_id: {
+                    in: productData.map(product => product.id),
+                }
             }).populate('color_id').populate('sizes').populate('sales');
 
             const now = moment().valueOf();
@@ -415,14 +405,14 @@ module.exports = {
                 productData[i] = {
                     ...product,
                     is_favorite: productFavorite && productFavorite.id ? true : false,
-                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                    product_detail: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
                         return {
                             ...productDetail,
                             sales: productDetail.sales
                                 .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                                 .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
                         }
-                    }),
+                    })[0],
                 };
             }
 
@@ -445,16 +435,12 @@ module.exports = {
             const productData = await Products.find({ is_disable: false, sold: { '>': 0 } })
                 .limit(10)
                 .sort([{ sold: 'DESC' }])
-                .populate('product_details')
                 .populate('images');
 
             const productDetails = await ProductDetails.find({
-                id: productData.reduce((total, product) => {
-                    return [
-                        ...total,
-                        ...product.product_details.map(item => item.id)
-                    ];
-                }, [])
+                product_id: {
+                    in: productData.map(product => product.id),
+                }
             }).populate('color_id').populate('sizes').populate('sales');
 
             const now = moment().valueOf();
@@ -473,14 +459,14 @@ module.exports = {
                 productData[i] = {
                     ...product,
                     is_favorite: productFavorite && productFavorite.id ? true : false,
-                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                    product_detail: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
                         return {
                             ...productDetail,
                             sales: productDetail.sales
                                 .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                                 .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
                         }
-                    }),
+                    })[0],
                 };
             }
 
@@ -503,16 +489,12 @@ module.exports = {
             const productData = await Products.find({ is_disable: false, views: { '>': 0 } })
                 .limit(10)
                 .sort([{ views: 'DESC' }])
-                .populate('product_details')
                 .populate('images');
 
             const productDetails = await ProductDetails.find({
-                id: productData.reduce((total, product) => {
-                    return [
-                        ...total,
-                        ...product.product_details.map(item => item.id)
-                    ];
-                }, [])
+                product_id: {
+                    in: productData.map(product => product.id),
+                }
             }).populate('color_id').populate('sizes').populate('sales');
 
             const now = moment().valueOf();
@@ -531,14 +513,14 @@ module.exports = {
                 productData[i] = {
                     ...product,
                     is_favorite: productFavorite && productFavorite.id ? true : false,
-                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                    product_detail: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
                         return {
                             ...productDetail,
                             sales: productDetail.sales
                                 .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                                 .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
                         }
-                    }),
+                    })[0],
                 };
             }
 
@@ -561,16 +543,12 @@ module.exports = {
             const productData = await Products.find({ is_disable: false, is_new: true })
                 .limit(10)
                 .sort([{ updated_at: 'DESC' }])
-                .populate('product_details')
                 .populate('images');
 
             const productDetails = await ProductDetails.find({
-                id: productData.reduce((total, product) => {
-                    return [
-                        ...total,
-                        ...product.product_details.map(item => item.id)
-                    ];
-                }, [])
+                product_id: {
+                    in: productData.map(product => product.id),
+                }
             }).populate('color_id').populate('sizes').populate('sales');
 
             const now = moment().valueOf();
@@ -590,14 +568,14 @@ module.exports = {
                 productData[i] = {
                     ...product,
                     is_favorite: productFavorite && productFavorite.id ? true : false,
-                    product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                    product_detail: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
                         return {
                             ...productDetail,
                             sales: productDetail.sales
                                 .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                                 .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf())
                         }
-                    }),
+                    })[0],
                 };
             }
 

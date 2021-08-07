@@ -18,7 +18,6 @@ module.exports = {
             const productData = await Products.find({
                 id: cartData.map(item => item.product_id)
             })
-                .populate('product_details')
                 .populate('images');
 
             const productDetails = await ProductDetails.find({

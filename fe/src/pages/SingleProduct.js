@@ -15,7 +15,6 @@ class SingleProduct extends Component {
 
         this.state = {
             product: null,
-            currentProductDetailIndex: 0,
             currentProductSizeDetailIndex: 0,
             currentProductImageIndex: 0,
             productSlug: props.match.params.slug,
@@ -74,24 +73,20 @@ class SingleProduct extends Component {
         this.setState({ currentProductImageIndex: imageIndex });
     }
 
-    handleSelectColor = (colorIndex) => {
-        this.setState({ currentProductDetailIndex: colorIndex, currentProductSizeDetailIndex: 0 });
-    }
-
     handleSelectSize = (sizeIndex) => {
         this.setState({ currentProductSizeDetailIndex: sizeIndex });
     }
 
     handleAddToCart = () => {
-        const { product, currentProductDetailIndex, currentProductSizeDetailIndex, quantity } = this.state;
+        const { product, currentProductSizeDetailIndex, quantity } = this.state;
         const { carts } = this.props;
 
         if (!product || !product.id) {
             return;
         }
 
-        const colors = (product.product_details || []);
-        const sizes = product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sizes;
+        const color = product.product_detail;
+        const sizes = product.product_detail && product.product_detail.sizes;
 
         if (quantity <= 0 || quantity > sizes[currentProductSizeDetailIndex].quantity) {
             return toast.success("Số lượng sản phẩm không hợp lệ!");
@@ -99,9 +94,9 @@ class SingleProduct extends Component {
 
         this.props.createCart({
             product_id: product.id,
-            product_detail_id: colors[currentProductDetailIndex] && colors[currentProductDetailIndex].id,
+            product_detail_id: color && color.id,
             product_size_detail_id: sizes[currentProductSizeDetailIndex] && sizes[currentProductSizeDetailIndex].id,
-            price: product.product_details[currentProductDetailIndex].price,
+            price: product.product_detail.price,
             sale_price: 0,
             quantity,
         }, () => {
@@ -138,14 +133,14 @@ class SingleProduct extends Component {
 
     render() {
         const { isAuth } = this.props;
-        const { product, currentProductDetailIndex, currentProductSizeDetailIndex, quantity, currentProductImageIndex } = this.state;
+        const { product, currentProductSizeDetailIndex, quantity, currentProductImageIndex } = this.state;
 
         if (!product || !product.id) {
             return <></>;
         }
 
-        const colors = (product.product_details || []);
-        const sizes = product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sizes;
+        const color = product.product_detail;
+        const sizes = product.product_detail && product.product_detail.sizes;
 
         return (
             <>
@@ -198,11 +193,11 @@ class SingleProduct extends Component {
                                             )}</p>
                                         </div>
                                         <div className="item-price">
-                                            <span className={product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sales && product.product_details[currentProductDetailIndex].sales[0] ? 'old-price' : ''}>
-                                                {product.product_details && product.product_details[currentProductDetailIndex] ? `${Number(product.product_details[currentProductDetailIndex].price).toLocaleString()} VND` : '0 VND'}
+                                            <span className={product.product_detail && product.product_detail.sales && product.product_detail.sales[0] ? 'old-price' : ''}>
+                                                {product.product_detail ? `${Number(product.product_detail.price).toLocaleString()} VND` : '0 VND'}
                                             </span>
-                                            {product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sales && product.product_details[currentProductDetailIndex].sales[0] ? (
-                                                <span>{Number(product.product_details[currentProductDetailIndex].sales[0].sale_price).toLocaleString()} VND</span>
+                                            {product.product_detail && product.product_detail.sales && product.product_detail.sales[0] ? (
+                                                <span>{Number(product.product_detail.sales[0].sale_price).toLocaleString()} VND</span>
                                             ) : <span>&nbsp;</span>}
                                         </div>
                                         <div className="single-product-info">
@@ -246,25 +241,21 @@ class SingleProduct extends Component {
                                                         flexWrap: 'wrap',
                                                         margin: '0 -5px',
                                                     }} >
-                                                        {colors && colors.map((color, index) => (
-                                                            <a key={color.id} href="#" style={{
-                                                                backgroundColor: color.color_id.color_code,
-                                                                display: 'inline-block',
-                                                                width: 25,
-                                                                height: 25,
-                                                                margin: 5,
-                                                                borderRadius: '100%',
-                                                                color: '#ffffff',
-                                                                fontSize: 10,
-                                                                textAlign: 'center',
-                                                                lineHeight: '25px',
-                                                            }} onClick={(e) => {
-                                                                e.preventDefault();
-                                                                this.handleSelectColor(index);
-                                                            }}>
-                                                                {currentProductDetailIndex == index ? <span className="glyphicon glyphicon-ok" aria-hidden="true"></span> : ''}
-                                                            </a>
-                                                        ))}
+                                                        <a key={color.id} href="#" style={{
+                                                            backgroundColor: color.color_id.color_code,
+                                                            display: 'inline-block',
+                                                            width: 25,
+                                                            height: 25,
+                                                            margin: 5,
+                                                            borderRadius: '100%',
+                                                            color: '#ffffff',
+                                                            fontSize: 10,
+                                                            textAlign: 'center',
+                                                            lineHeight: '25px',
+                                                        }} onClick={(e) => {
+                                                            e.preventDefault();
+                                                        }}>
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -303,11 +294,11 @@ class SingleProduct extends Component {
                                         </div>
                                         <div className="cart-item">
                                             <div className="price-box">
-                                                <span className={product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sales && product.product_details[currentProductDetailIndex].sales[0] ? 'old-price' : ''}>
-                                                    {product.product_details && product.product_details[currentProductDetailIndex] ? `${Number(product.product_details[currentProductDetailIndex].price * quantity).toLocaleString()} VND` : '0 VND'}
+                                                <span className={product.product_detail && product.product_detail.sales && product.product_detail.sales[0] ? 'old-price' : ''}>
+                                                    {product.product_detail ? `${Number(product.product_detail.price * quantity).toLocaleString()} VND` : '0 VND'}
                                                 </span>
-                                                {product.product_details && product.product_details[currentProductDetailIndex] && product.product_details[currentProductDetailIndex].sales && product.product_details[currentProductDetailIndex].sales[0] ? (
-                                                    <span>{Number(product.product_details[currentProductDetailIndex].sales[0].sale_price * quantity).toLocaleString()} VND</span>
+                                                {product.product_detail && product.product_detail.sales && product.product_detail.sales[0] ? (
+                                                    <span>{Number(product.product_detail.sales[0].sale_price * quantity).toLocaleString()} VND</span>
                                                 ) : <span>&nbsp;</span>}
                                             </div>
                                             {

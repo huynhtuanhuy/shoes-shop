@@ -69,12 +69,34 @@ class EditProductSales extends Component {
     }
 
     handleSelectChange = (e) => {
-        const { formData } = this.state;
+        const { formData, productOptions } = this.state;
         const { name, value } = e.target;
+
         this.setState({
             formData: {
                 ...formData,
                 [name]: value,
+            }
+        }, () => {
+            if (name == 'product_id') {
+                if (value) {
+                    const productSelected = productOptions.filter(product => product.id == value)[0];
+                    if (productSelected && productSelected.product_detail && productSelected.product_detail.id) {
+                        this.setState({
+                            formData: {
+                                ...this.state.formData,
+                                product_detail_id: productSelected.product_detail.id,
+                            }
+                        });
+                    }
+                } else {
+                    this.setState({
+                        formData: {
+                            ...this.state.formData,
+                            product_detail_id: null,
+                        }
+                    });
+                }
             }
         });
     }
@@ -112,9 +134,9 @@ class EditProductSales extends Component {
                                 </CFormGroup>
                                 <CFormGroup>
                                     <CLabel htmlFor="product_detail_id">Thông số sản phẩm:</CLabel>
-                                    <CSelect required custom value={product_detail_id} onChange={this.handleSelectChange} name="product_detail_id" id="product_detail_id">
+                                    <CSelect disabled required custom value={product_detail_id} onChange={this.handleSelectChange} name="product_detail_id" id="product_detail_id">
                                         <option value="">Chọn thông số</option>
-                                        {currentProduct && currentProduct.product_details && currentProduct.product_details.map(product_detail => <option key={product_detail.id} value={product_detail.id}>Màu: {product_detail.color_id && product_detail.color_id.color_name} - Giá gốc: {product_detail.price}</option>)}
+                                        {currentProduct && currentProduct.product_detail && <option key={currentProduct.product_detail.id} value={currentProduct.product_detail.id}>Màu: {currentProduct.product_detail.color_id && currentProduct.product_detail.color_id.color_name} - Giá gốc: {currentProduct.product_detail.price}</option>}
                                     </CSelect>
                                 </CFormGroup>
                                 <CFormGroup>

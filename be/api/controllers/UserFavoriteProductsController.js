@@ -25,15 +25,12 @@ module.exports = {
                 id: {
                     in: favoriteProductData.map(item => item.product_id),
                 }
-            }).populate('images').populate('product_details');
+            }).populate('images');
 
             const productDetails = await ProductDetails.find({
-                id: products.reduce((total, product) => {
-                    return [
-                        ...total,
-                        ...product.product_details.map(item => item.id)
-                    ]
-                }, [])
+                product_id: {
+                    in: products.map(product => product.id),
+                }
             }).populate('color_id').populate('sizes').populate('sales');
 
             const now = moment().valueOf();
@@ -48,14 +45,14 @@ module.exports = {
                             product: product ? {
                                 ...product,
                                 is_favorite: true,
-                                product_details: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
+                                product_detail: productDetails.filter(productDetail => productDetail.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(productDetail => {
                                     return {
                                         ...productDetail,
                                         sales: productDetail.sales
                                             .filter(sale => moment(sale.start_date).startOf('date').valueOf() <= now && moment(sale.end_date).endOf('date').valueOf() >= now)
                                             .sort((a, b) => moment(b.start_date).startOf('date').valueOf() - moment(a.start_date).startOf('date').valueOf()),
                                     }
-                                })
+                                })[0]
                             } : null,
                         }
                     }),

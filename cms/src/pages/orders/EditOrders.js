@@ -218,15 +218,9 @@ class EditOrders extends Component {
                                                             <CCol xs="4">
                                                                 <CFormGroup>
                                                                     <CLabel htmlFor="product_detail_id">Màu sản phẩm:</CLabel>
-                                                                    <CSelect disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} required custom value={order_product_details[index].product_detail_id} onChange={(e) => {
-                                                                        this.handleNormalSelectChange(e);
-                                                                        const currentProductDetail = currentProduct && currentProduct.product_details && currentProduct.product_details.filter(item => item.id == e.target.value)[0] || null;
-                                                                        this.handleChange({ target: { name: `order_product_details[${index}].sale_price`, value: currentProductDetail.sales && currentProductDetail.sales[0] && currentProductDetail.sales[0].sale_price || 0 } });
-                                                                        this.handleChange({ target: { name: `order_product_details[${index}].price`, value: currentProductDetail.price  } });
-                                                                        this.handleChange({ target: { name: `order_product_details[${index}].product_size_detail_id`, value: ""  } });
-                                                                    }} name={`order_product_details[${index}].product_detail_id`}>
+                                                                    <CSelect disabled={order_product_details[index].id} required custom value={order_product_details[index].product_detail_id} name={`order_product_details[${index}].product_detail_id`}>
                                                                         <option value="">Chọn màu</option>
-                                                                        {currentProduct && currentProduct.product_details && currentProduct.product_details.map(product_detail => <option key={product_detail.id} value={product_detail.id}>Màu: {product_detail.color_id && product_detail.color_id.color_name}</option>)}
+                                                                        {currentProduct && currentProduct.product_detail && <option key={currentProduct.product_detail.id} value={currentProduct.product_detail.id}>Màu: {currentProduct.product_detail.color_id && currentProduct.product_detail.color_id.color_name}</option>}
                                                                     </CSelect>
                                                                 </CFormGroup>
                                                             </CCol>
@@ -235,10 +229,9 @@ class EditOrders extends Component {
                                                                     <CLabel htmlFor="product_size_detail_id">Size sản phẩm:</CLabel>
                                                                     <CSelect disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} required custom value={order_product_details[index].product_size_detail_id} onChange={this.handleNormalSelectChange} name={`order_product_details[${index}].product_size_detail_id`}>
                                                                         <option value="">Chọn size</option>
-                                                                        {currentProduct && currentProduct.product_details
-                                                                         && currentProduct.product_details.filter(product_detail => product_detail.id == order_product_details[index].product_detail_id)[0]
-                                                                         && currentProduct.product_details.filter(product_detail => product_detail.id == order_product_details[index].product_detail_id)[0].sizes
-                                                                         && currentProduct.product_details.filter(product_detail => product_detail.id == order_product_details[index].product_detail_id)[0].sizes.map(product_size_detail => <option key={product_size_detail.id} value={product_size_detail.id}>{product_size_detail.size_id && product_size_detail.size_id.size}</option>)}
+                                                                        {currentProduct && currentProduct.product_detail
+                                                                         && currentProduct.product_detail.sizes
+                                                                         && currentProduct.product_detail.sizes.map(product_size_detail => <option key={product_size_detail.id} value={product_size_detail.id}>{product_size_detail.size_id && product_size_detail.size_id.size}</option>)}
                                                                     </CSelect>
                                                                 </CFormGroup>
                                                             </CCol>

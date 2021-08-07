@@ -92,32 +92,23 @@ module.exports = {
             const productData = await Products.find(filter)
                 .limit(Number(perPage))
                 .skip((Number(page) - 1) * Number(perPage))
-                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : [])
-                .populate('product_details');
+                .sort(sorted && sorted.length > 0 ? sorted.map(sortItem => JSON.parse(sortItem)).map(sortItem => ({ [sortItem.id]: sortItem.desc ? 'DESC' : 'ASC' })) : []);
 
             const productDetails = await ProductDetails.find({
-                id: {
-                    in: productData.reduce((total, item) => {
-                        return [
-                            ...total,
-                            ...(item.product_details || []).map(product_detail => product_detail.id)
-                        ]
-                    }, [])
-                }
+                product_id: productData.map(product => product.id)
             }).populate('color_id').populate('sizes');
 
             res.json({
                 success: 1,
                 data: {
                     data: productData.map(product => {
+                        const product_detail = productDetails.filter(productDetail => productDetail.product_id == product.id)[0];
                         return {
                             ...product,
-                            product_details: productDetails.filter(productDetail => productDetail.product_id == product.id),
-                            totalInventory: productDetails.filter(productDetail => productDetail.product_id == product.id).reduce((total, productDetail) => {
-                                return total + (productDetail.sizes || []).reduce((totalQuantity, productSizeDetail) => {
-                                    return totalQuantity += productSizeDetail.quantity;
-                                }, 0);
-                            }, 0)
+                            product_detail: product_detail,
+                            totalInventory: product_detail && (product_detail.sizes || []).reduce((totalQuantity, productSizeDetail) => {
+                                return totalQuantity += productSizeDetail.quantity;
+                            }, 0) || 0,
                         }
                     }),
                     page: Number(page),

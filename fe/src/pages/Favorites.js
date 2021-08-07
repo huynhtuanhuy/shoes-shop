@@ -90,7 +90,7 @@ class Favorites extends Component {
                                                                         )
                                                                     }
                                                                     {
-                                                                        product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] && (
+                                                                        product.product_detail && product.product_detail.sales && product.product_detail.sales[0] && (
                                                                             <div className="level-pro-sale">
                                                                                 <span>SP Giảm giá</span>
                                                                             </div>
@@ -108,12 +108,12 @@ class Favorites extends Component {
                                                                         </div>
                                                                         <div className="price-rating row">
                                                                             <div className="col-md-6">
-                                                                                <span className={product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? 'old-price' : ''}>
-                                                                                    {product.product_details && product.product_details[0] ? `${Number(product.product_details[0].price).toLocaleString()} VND` : '0 VND'}
+                                                                                <span className={product.product_detail && product.product_detail.sales && product.product_detail.sales[0] ? 'old-price' : ''}>
+                                                                                    {product.product_detail ? `${Number(product.product_detail.price).toLocaleString()} VND` : '0 VND'}
                                                                                 </span>
                                                                                 <br />
-                                                                                {product.product_details && product.product_details[0] && product.product_details[0].sales && product.product_details[0].sales[0] ? (
-                                                                                    <span>{Number(product.product_details[0].sales[0].sale_price).toLocaleString()} VND</span>
+                                                                                {product.product_detail && product.product_detail.sales && product.product_detail.sales[0] ? (
+                                                                                    <span>{Number(product.product_detail.sales[0].sale_price).toLocaleString()} VND</span>
                                                                                 ) : <span>&nbsp;</span>}
                                                                             </div>
                                                                             <div className="col-md-6">
