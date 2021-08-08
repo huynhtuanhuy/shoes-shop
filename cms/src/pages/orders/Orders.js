@@ -91,6 +91,9 @@ class Orders extends Component {
         accessor: 'total',
         filterable: false,
         sortable: false,
+        Cell: (row) => (<span>
+          {Number(row.value).toLocaleString()} VNĐ
+        </span>)
       },
       {
         Header: 'Hành động',

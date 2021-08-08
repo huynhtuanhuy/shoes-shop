@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { toast } from 'react-toastify';
+import ReactTooltip from 'react-tooltip';
 
 import * as networks from '../networks';
 import * as actions from '../actions';
@@ -314,7 +315,8 @@ class Category extends Component {
                                                 }} onClick={(e) => {
                                                     e.preventDefault();
                                                     this.handleSelectColor(color);
-                                                }}>
+                                                }}
+                                                data-tip={color.color_name}>
                                                     {filter.color == color.id ? <span className="glyphicon glyphicon-ok" aria-hidden="true"></span> : ''}
                                                 </a>
                                             ))}
@@ -418,6 +420,7 @@ class Category extends Component {
                         </div>
                     </div>
                 </div>
+                <ReactTooltip />
             </div>
         )
     }

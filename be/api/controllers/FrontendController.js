@@ -367,7 +367,7 @@ module.exports = {
         try {
             const productSaleData = await ProductDetailSales.find({
                 start_date: { '<=': moment().startOf('date').toISOString() },
-                end_date: { '>=': moment().endOf('date').toISOString() },
+                end_date: { '>=': moment().startOf('date').toISOString() },
             }).sort([{ created_at: 'DESC' }]);
             console.log(productSaleData);
             const productIds = [];

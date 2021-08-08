@@ -210,7 +210,19 @@ class EditOrders extends Component {
                                                                             container: styles => ({ ...styles, zIndex: 5 }),
                                                                         }}
                                                                         placeholder="Chọn sản phẩm"
-                                                                        onChange={this.handleSelectChange}
+                                                                        onChange={(option, action) => {
+                                                                            const productSelected = productOptions.filter(item => item.id == option.value)[0];
+                                                                            if (productSelected && productSelected.product_detail) {
+                                                                                const formData = this.state.formData;
+                                                                                formData.order_product_details[index].product_detail_id = productSelected.product_detail.id;
+                                                                                formData.order_product_details[index].price = productSelected.product_detail.price;
+                                                                                formData.order_product_details[index].sale_price = productSelected.product_detail.sales && productSelected.product_detail.sales[0] ? productSelected.product_detail.sales[0].sale_price : 0;
+                                                                                this.setState({
+                                                                                    formData,
+                                                                                });
+                                                                            }
+                                                                            this.handleSelectChange(option, action);
+                                                                        }}
                                                                         required
                                                                     />
                                                                 </CFormGroup>
@@ -218,7 +230,7 @@ class EditOrders extends Component {
                                                             <CCol xs="4">
                                                                 <CFormGroup>
                                                                     <CLabel htmlFor="product_detail_id">Màu sản phẩm:</CLabel>
-                                                                    <CSelect disabled={order_product_details[index].id} required custom value={order_product_details[index].product_detail_id} name={`order_product_details[${index}].product_detail_id`}>
+                                                                    <CSelect disabled required custom value={order_product_details[index].product_detail_id} name={`order_product_details[${index}].product_detail_id`}>
                                                                         <option value="">Chọn màu</option>
                                                                         {currentProduct && currentProduct.product_detail && <option key={currentProduct.product_detail.id} value={currentProduct.product_detail.id}>Màu: {currentProduct.product_detail.color_id && currentProduct.product_detail.color_id.color_name}</option>}
                                                                     </CSelect>

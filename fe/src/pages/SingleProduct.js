@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 import Magnifier from "react-magnifier";
 import { toast } from 'react-toastify';
+import ReactTooltip from 'react-tooltip';
 
 import * as networks from '../networks';
 import * as actions from '../actions';
@@ -254,7 +255,8 @@ class SingleProduct extends Component {
                                                             lineHeight: '25px',
                                                         }} onClick={(e) => {
                                                             e.preventDefault();
-                                                        }}>
+                                                        }}
+                                                            data-tip={color.color_id.color_name}>
                                                         </a>
                                                     </div>
                                                 </div>
@@ -353,7 +355,7 @@ class SingleProduct extends Component {
                         </div>
                     </div>
                 </div>
-
+                <ReactTooltip />
             </>
         )
     }

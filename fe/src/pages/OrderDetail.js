@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
+import ReactTooltip from 'react-tooltip';
 
 import * as actions from '../actions';
 import * as networks from '../networks';
@@ -143,7 +144,8 @@ class OrderDetail extends Component {
                                                                                             fontSize: 10,
                                                                                             textAlign: 'center',
                                                                                             lineHeight: '15px',
-                                                                                        }}></span>
+                                                                                        }}
+                                                                                        data-tip={orderDetailItem.product_detail.color_id.color_name}></span>
                                                                                     )}
                                                                                 </span>
                                                                             </td>
@@ -195,6 +197,7 @@ class OrderDetail extends Component {
                         </div>
                     </div>
                 </div>
+                <ReactTooltip />
             </div>
 
         )

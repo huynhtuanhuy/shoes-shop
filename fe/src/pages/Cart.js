@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import ReactTooltip from 'react-tooltip';
 
 import * as actions from '../actions';
 
@@ -124,7 +125,8 @@ class Cart extends Component {
                                                                 fontSize: 10,
                                                                 textAlign: 'center',
                                                                 lineHeight: '15px',
-                                                            }}></span>
+                                                            }}
+                                                            data-tip={cartItem.productDetail.color_id.color_name}></span>
                                                         )}
                                                     </span>
                                                 </td>
@@ -209,6 +211,7 @@ class Cart extends Component {
                         </div>
                     ) : ''}
                 </div>
+                <ReactTooltip />
             </div>
 
         )
