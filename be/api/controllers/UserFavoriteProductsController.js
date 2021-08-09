@@ -10,7 +10,7 @@ const moment = require('moment');
 
 module.exports = {
     find: async (req, res) => {
-        const { page = 1, perPage = 10 } = req.query;
+        const { page = 1, perPage = 9 } = req.query;
         try {
             const filter = {
                 user_id: req.session.userInfo.id,

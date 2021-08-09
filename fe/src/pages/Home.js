@@ -223,7 +223,7 @@ class Home extends Component {
                         <Link to={`/product/${product.slug}`}>{product.name}</Link>
                     </div>
                     <div className="price-rating row">
-                        <div className="col-md-6">
+                        <div className="col-md-9">
                             <span className={product.product_detail && product.product_detail.sales && product.product_detail.sales[0] ? 'old-price' : ''}>
                                 {product.product_detail ? `${Number(product.product_detail.price).toLocaleString()} VND` : '0 VND'}
                             </span>
@@ -232,7 +232,7 @@ class Home extends Component {
                                 <span>{Number(product.product_detail.sales[0].sale_price).toLocaleString()} VND</span>
                             ) : <span>&nbsp;</span>}
                         </div>
-                        <div className="col-md-6">
+                        <div className="col-md-3">
                             {isAuth && (
                                 <div className="action">
                                     <ul className="add-to-links text-right">

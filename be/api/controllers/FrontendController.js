@@ -219,7 +219,7 @@ module.exports = {
         }
     },
     filterProducts: async (req, res) => {
-        const { page = 1, perPage = 10, sorted = '', filtered = '' } = req.query;
+        const { page = 1, perPage = 9, sorted = '', filtered = '' } = req.query;
         try {
             let category_parent_slug = null;
             let category = null;

@@ -944,6 +944,13 @@ body {
     position: relative;
     margin-top: 30px;
 }
+.single-product .product-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+}
 .level-pro-new , .level-pro-sale {
     color: #fff;
     font-family: "Montserrat",sans-serif;
@@ -2077,9 +2084,20 @@ ul.address li span {
 }
 .product-content .single-product {
     margin-bottom: 40px;
+    height: 314px;
+    position: relative;
 }
 .product-content .single-product .actions {
     padding: 0px;
+    position: absolute;
+    bottom: 0;
+}
+.product-content .single-product .product-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
 }
 .product-content .product-img a {
     border-bottom: 0px solid #e6e6e6;
@@ -3410,6 +3428,6 @@ button.check-button:hover,
   /* min-height: 560px; */
 }
 
-.owl-controls.clickable {
+/* .owl-controls.clickable {
     display: none !important;
-}
+} */

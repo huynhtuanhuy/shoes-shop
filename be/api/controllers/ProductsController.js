@@ -96,7 +96,7 @@ module.exports = {
                 product_id: {
                     in: productData.map(product => product.id),
                 }
-            });
+            }).populate('sales');
 
             const categories = await Categories.find({
                 id: {
