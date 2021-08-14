@@ -49,7 +49,7 @@ module.exports = {
                                 category: categories.filter(item => item.id == category.category_id)[0],
                             }
                         }),
-                        product_detail: product_details.filter(item => item.product_id = product.id).sort((a, b) => b.sales.length - a.sales.length).map(item => {
+                        product_detail: product_details.filter(item => item.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length).map(item => {
                             return {
                                 ...item,
                                 sizes: product_size_details.filter(size => item.sizes.map(_item => _item.id).includes(size.id)),
@@ -121,7 +121,7 @@ module.exports = {
                                     category: categories.filter(item => item.id == category.category_id)[0],
                                 }
                             }),
-                            product_detail: product_details.filter(item => item.product_id = product.id).sort((a, b) => b.sales.length - a.sales.length)[0],
+                            product_detail: product_details.filter(item => item.product_id == product.id).sort((a, b) => b.sales.length - a.sales.length)[0],
                         }
                     }),
                     page: Number(page),
