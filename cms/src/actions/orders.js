@@ -3,6 +3,7 @@ import {
     GET_ORDERS_ERROR,
     GET_ORDERS_SUCCESS,
     UPDATE_ORDER,
+    CREATE_ORDER,
 } from './actionTypes';
 
 export const getOrders = (params) => ({
@@ -21,6 +22,12 @@ export const getOrdersError = () => ({
 
 export const updateOrder = (order, cb) => ({
     type: UPDATE_ORDER,
+    order,
+    cb,
+})
+
+export const createOrder = (order, cb) => ({
+    type: CREATE_ORDER,
     order,
     cb,
 })

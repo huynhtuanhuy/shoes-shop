@@ -16,6 +16,7 @@ import {
     CRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
+import { toast } from 'react-toastify';
 
 import * as actions from '../../actions';
 import * as networks from '../../networks';
@@ -43,6 +44,11 @@ class EditSizes extends Component {
     handleChange = (e) => {
         const { formData } = this.state;
         const { name, value } = e.target;
+
+        if (name == 'size' && value && value.length > 2) {
+            return;
+        }
+
         this.setState({
             formData: {
                 ...formData,
@@ -65,6 +71,11 @@ class EditSizes extends Component {
     handleSubmit = (e) => {
         e.preventDefault();
         const { id, size, size_code } = this.state.formData;
+
+        if (size && size.length != 2) {
+            toast.error('Size sản phẩm phải có 2 chữ số!');
+            return;
+        }
         
         this.props.updateSize({ id, size, size_code }, () => {
             this.props.history.push('/sizes');

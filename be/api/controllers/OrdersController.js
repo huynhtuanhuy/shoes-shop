@@ -236,4 +236,59 @@ module.exports = {
             });
         }
     },
+    create: async (req, res) => {
+        const { user_id, customer_fullname, customer_phone, customer_email, customer_address, status, order_product_details, total } = req.body;
+
+        try {
+            const orderCreated = await Orders.create({
+                    user_id,
+                    customer_fullname,
+                    customer_phone,
+                    customer_email,
+                    customer_address,
+                    status,
+                    total: order_product_details.reduce((total, order_detail) => total + (order_detail.quantity * (order_detail.sale_price || order_detail.price)), 0)
+                }).fetch();
+
+                if (order_product_details) {
+                    for (let i = 0; i < order_product_details.length; i++) {
+                        const order_product_detail = order_product_details[i];
+                        if (!order_product_detail.id) {
+                            await OrderProductDetails.create({
+                                order_id: orderCreated.id,
+                                product_detail_id: order_product_detail.product_detail_id,
+                                product_size_detail_id: order_product_detail.product_size_detail_id,
+                                quantity: order_product_detail.quantity,
+                                price: order_product_detail.price,
+                                sale_price: order_product_detail.sale_price,
+                            });
+                        } else {
+                            await OrderProductDetails.updateOne({
+                                id: order_product_detail.id
+                            }).set({
+                                product_detail_id: order_product_detail.product_detail_id,
+                                product_size_detail_id: order_product_detail.product_size_detail_id,
+                                quantity: order_product_detail.quantity,
+                                price: order_product_detail.price,
+                                sale_price: order_product_detail.sale_price,
+                            });
+                        }
+                    }
+                }
+
+
+            return res.json({
+                success: 1,
+                data: orderCreated,
+                message: '',
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: 0,
+                data: null,
+                message: error && error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau!'
+            });
+        }
+    },
 };

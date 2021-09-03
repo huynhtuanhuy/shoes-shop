@@ -23,3 +23,10 @@ export function updateOrder (id, order) {
         order,
     );
 }
+
+export function createOrder (order) {
+    return axios.post(
+        `${ORDERS_URL}`,
+        order,
+    );
+}

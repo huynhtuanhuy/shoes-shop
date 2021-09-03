@@ -9,6 +9,7 @@ import {
 import {
     getOrders,
     updateOrder,
+    createOrder,
 } from '../../networks';
 
 export function* getOrdersSaga(action) {
@@ -33,6 +34,23 @@ export function* updateOrderSaga(action) {
 
         if (result.data) {
             toast.success('Chỉnh sửa đơn hàng thành công.');
+            if (action.cb) {
+                action.cb();
+            }
+        } else {
+            toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau!');
+        }
+    } catch (error) {
+        toast.error(error.response && error.response.data && error.response.data.message ? error.response.data.message : 'Đã có lỗi xảy ra, vui lòng thử lại sau!');
+    }
+}
+
+export function* createOrderSaga(action) {
+    try {
+        let result = yield createOrder(action.order);
+
+        if (result.data) {
+            toast.success('Tạo đơn hàng thành công.');
             if (action.cb) {
                 action.cb();
             }

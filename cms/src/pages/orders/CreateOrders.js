@@ -32,7 +32,7 @@ class EditOrders extends Component {
             customer_phone: '',
             customer_email: '',
             customer_address: '',
-            status: '',
+            status: 'packed',
             total: '',
             order_product_details: [],
         },
@@ -41,20 +41,6 @@ class EditOrders extends Component {
 
     async componentDidMount() {
         try {
-            const orderId = this.props.match.params.id;
-            const order = await networks.getSingleOrder(orderId);
-            if (order.data && order.data.data) {
-                this.setState({ formData: {
-                    ...order.data.data,
-                    order_product_details: order.data.data.order_product_details.map(order_product_detail => {
-                        return {
-                            ...order_product_detail,
-                            product_id: order_product_detail.product_detail && order_product_detail.product_detail.product_id && order_product_detail.product_detail.product_id.id
-                        }
-                    })
-                } });
-            }
-
             const productOptions = await networks.getProductOptions();
             if (productOptions.data && productOptions.data.data) {
                 this.setState({ productOptions: productOptions.data.data });
@@ -116,14 +102,14 @@ class EditOrders extends Component {
 
     handleSubmit = (e) => {
         e.preventDefault();
-        const { id, customer_fullname, customer_phone, customer_email, customer_address, status, total, order_product_details } = this.state.formData;
+        const { customer_fullname, customer_phone, customer_email, customer_address, status, total, order_product_details } = this.state.formData;
 
         if (customer_phone && !/^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$/.test(customer_phone)) {
             toast.error('Số điện thoại không hợp lệ!');
             return;
         }
 
-        this.props.updateOrder({ id, customer_fullname, customer_phone, customer_email, customer_address, status, total, order_product_details }, () => {
+        this.props.createOrder({ customer_fullname, customer_phone, customer_email, customer_address, status, total, order_product_details }, () => {
             this.props.history.push('/orders');
         });
     }
@@ -185,7 +171,7 @@ class EditOrders extends Component {
                                     <CLabel htmlFor="customer_address">Địa chỉ khách hàng</CLabel>
                                     <CInput disabled={['shipping', 'accomplished', 'cancelled'].includes(status)} value={customer_address} onChange={this.handleChange} required id="customer_address" name="customer_address" placeholder="Nhập địa chỉ khách hàng" />
                                 </CFormGroup>
-                                <CFormGroup>
+                                {/* <CFormGroup>
                                     <CLabel htmlFor="status">Trạng thái đơn hàng:</CLabel>
                                     <CSelect disabled={['accomplished', 'cancelled'].includes(status)} custom value={status} onChange={this.handleNormalSelectChange} name="status" id="status">
                                         <option value="pending">Chờ xử lý</option>
@@ -195,7 +181,7 @@ class EditOrders extends Component {
                                         <option value="accomplished">Đã hoàn thành</option>
                                         <option value="cancelled">Đã hủy</option>
                                     </CSelect>
-                                </CFormGroup>
+                                </CFormGroup> */}
                                 <CFormGroup>
                                     <CLabel htmlFor="order_product_details">Thông tin sản phẩm</CLabel>
                                     <div>
@@ -309,6 +295,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     updateOrder: (order, cb) => dispatch(actions.updateOrder(order, cb)),
+    createOrder: (order, cb) => dispatch(actions.createOrder(order, cb)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditOrders);

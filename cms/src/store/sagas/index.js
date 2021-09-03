@@ -23,6 +23,7 @@ import {
     DELETE_PRODUCT_DETAIL_SALE,
     GET_ORDERS,
     UPDATE_ORDER,
+    CREATE_ORDER,
     GET_COLORS,
     CREATE_COLOR,
     UPDATE_COLOR,
@@ -86,6 +87,7 @@ import {
 import {
     getOrdersSaga,
     updateOrderSaga,
+    createOrderSaga,
 } from './orders';
 
 export function* watchAuth() {
@@ -141,4 +143,5 @@ export function* watchProductDetailSales() {
 export function* watchOrders() {
     yield takeEvery(GET_ORDERS, getOrdersSaga);
     yield takeEvery(UPDATE_ORDER, updateOrderSaga);
+    yield takeEvery(CREATE_ORDER, createOrderSaga);
 }

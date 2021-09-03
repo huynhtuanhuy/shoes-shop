@@ -16,6 +16,7 @@ import {
     CRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
+import { toast } from 'react-toastify';
 
 import * as actions from '../../actions';
 import * as networks from '../../networks';
@@ -31,6 +32,11 @@ class NewSizes extends Component {
     handleChange = (e) => {
         const { formData } = this.state;
         const { name, value } = e.target;
+
+        if (name == 'size' && value && value.length > 2) {
+            return;
+        }
+
         this.setState({
             formData: {
                 ...formData,
@@ -54,6 +60,11 @@ class NewSizes extends Component {
         e.preventDefault();
         const { size, size_code } = this.state.formData;
 
+        if (size && size.length != 2) {
+            toast.error('Size sản phẩm phải có 2 chữ số!');
+            return;
+        }
+
         this.props.createSize({ size, size_code }, () => {
             this.props.history.push('/sizes');
         });
@@ -74,7 +85,7 @@ class NewSizes extends Component {
                             <CForm onSubmit={this.handleSubmit} id="new-form" className="form-horizontal">
                                 <CFormGroup>
                                     <CLabel htmlFor="size">Size</CLabel>
-                                    <CInput type="string" value={size} onChange={this.handleChange} required id="size" name="size" placeholder="Nhập size" />
+                                    <CInput type="number" value={size} onChange={this.handleChange} required id="size" name="size" placeholder="Nhập size" />
                                 </CFormGroup>
                                 <CFormGroup>
                                     <CLabel htmlFor="size_code">Mã size</CLabel>

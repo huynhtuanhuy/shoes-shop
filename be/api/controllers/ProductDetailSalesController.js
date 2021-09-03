@@ -144,6 +144,16 @@ const slug = require('slug');
                 });
             }
 
+            const productDetailSaleExistFound = await ProductDetailSales.findOne({ product_id: product_id || productDetailSaleFound.product_id });
+
+            if (productDetailSaleExistFound && productDetailSaleExistFound.id && productDetailSaleExistFound.id != productDetailSaleFound.id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Sản phẩm này đã có chương trình khuyến mãi!'
+                });
+            }
+
             await ProductDetailSales.updateOne({ id })
                 .set({
                     product_id: product_id || productDetailSaleFound.product_id,
@@ -172,6 +182,16 @@ const slug = require('slug');
     create: async (req, res) => {
         const { product_id, product_detail_id, sale_price, start_date, end_date } = req.body;
         try {
+            const productDetailSaleExistFound = await ProductDetailSales.findOne({ product_id: product_id });
+
+            if (productDetailSaleExistFound && productDetailSaleExistFound.id) {
+                return res.status(404).json({
+                    success: 0,
+                    data: null,
+                    message: 'Sản phẩm này đã có chương trình khuyến mãi!'
+                });
+            }
+
             const productDetailSaleCreated = await ProductDetailSales.create({
                 product_id,
                 product_detail_id,

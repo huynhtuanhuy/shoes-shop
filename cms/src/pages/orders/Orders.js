@@ -60,7 +60,7 @@ class Orders extends Component {
         filterable: true,
         sortable: true,
         Cell: (row) => (<div>
-          <span>
+          <span >
             {
               row.value == 'pending' ? 'Chờ xử lý'
                : (row.value == 'processing' ? 'Đang xử lý'
@@ -156,6 +156,13 @@ class Orders extends Component {
       <CRow>
         <CCol xl={12}>
           <CCard>
+            <CCardHeader>
+              <div className="text-right">
+                <Link to="/orders/new">
+                  <CButton color="primary">Tạo mới</CButton>
+                </Link>
+              </div>
+            </CCardHeader>
             <CCardBody>
               <ReactTable
                 data={orders.data}

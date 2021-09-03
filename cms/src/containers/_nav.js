@@ -10,6 +10,12 @@ const _nav =  [
   },
   {
     _tag: 'CSidebarNavItem',
+    name: 'Quản lý đơn hàng',
+    to: '/orders',
+    icon: <CIcon name="cil-clipboard" customClasses="c-sidebar-nav-icon"/>,
+  },
+  {
+    _tag: 'CSidebarNavItem',
     name: 'Quản lý sản phẩm',
     to: '/products',
     icon: <CIcon name="cil-barcode" customClasses="c-sidebar-nav-icon"/>,
@@ -37,12 +43,6 @@ const _nav =  [
     name: 'Quản lý kích cỡ',
     to: '/sizes',
     icon: <CIcon name="cil-tags" customClasses="c-sidebar-nav-icon"/>,
-  },
-  {
-    _tag: 'CSidebarNavItem',
-    name: 'Quản lý đơn hàng',
-    to: '/orders',
-    icon: <CIcon name="cil-clipboard" customClasses="c-sidebar-nav-icon"/>,
   },
   {
     _tag: 'CSidebarNavItem',

@@ -22,6 +22,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import _, { size } from 'lodash';
 import Select from 'react-select';
 import Dropzone from './Dropzone';
+import { toast } from 'react-toastify';
 
 import * as actions from '../../actions';
 import * as networks from '../../networks';
@@ -113,6 +114,11 @@ class NewProducts extends Component {
         const { formData } = this.state;
         const { name, value } = e.target;
 
+        if (name.indexOf('.size_id') > -1 && formData && formData.product_detail && formData.product_detail.sizes && formData.product_detail.sizes.filter(item => item.size_id == value).length > 0) {
+            toast.error('Sản phẩm đã có kích cỡ này rồi.');
+            return;
+        }
+
         const newFormData = { ...formData };
         _.set(newFormData, name, value);
 
@@ -147,6 +153,12 @@ class NewProducts extends Component {
     handleSubmit = async (e) => {
         e.preventDefault();
         const { name, sku, description, is_new, is_disable, categories, product_detail, images, category_parent } = this.state.formData;
+
+        for (let i = 0; i < product_detail.length; i++) {
+            const product_detail_item = product_detail[i];
+            console.log(product_detail_item);
+        }
+        return;
 
         const formData = new FormData();
         for (let i = 0; i < images.length; i++) {

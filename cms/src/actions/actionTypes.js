@@ -60,3 +60,4 @@ export const GET_ORDERS = 'GET_ORDERS';
 export const GET_ORDERS_SUCCESS = 'GET_ORDERS_SUCCESS';
 export const GET_ORDERS_ERROR = 'GET_ORDERS_ERROR';
 export const UPDATE_ORDER = 'UPDATE_ORDER';
+export const CREATE_ORDER = 'CREATE_ORDER';

@@ -55,6 +55,7 @@ const ProductCategories = React.lazy(() => import('./pages/product-categories/Pr
 const NewProductCategories = React.lazy(() => import('./pages/product-categories/NewProductCategories'));
 const EditProductCategories = React.lazy(() => import('./pages/product-categories/EditProductCategories'));
 const EditOrders = React.lazy(() => import('./pages/orders/EditOrders'));
+const CreateOrders = React.lazy(() => import('./pages/orders/CreateOrders'));
 const Orders = React.lazy(() => import('./pages/orders/Orders'));
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
 const Statistics = React.lazy(() => import('./pages/statistics/Statistics'));
@@ -84,6 +85,7 @@ const routes = [
   { path: '/sizes/new', exact: true,  name: 'Tạo mới', component: NewSizes },
   { path: '/sizes', exact: true,  name: 'Quản lý kích cỡ', component: Sizes },
 
+  { path: '/orders/new', exact: true,  name: 'Tạo mới', component: CreateOrders },
   { path: '/orders/:id/edit', exact: true,  name: 'Chỉnh sửa', component: EditOrders },
   { path: '/orders', exact: true,  name: 'Quản lý đơn hàng', component: Orders },
   
